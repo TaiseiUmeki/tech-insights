@@ -1,0 +1,141 @@
+services:
+  backend:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+    ports:
+      - "8000:8000"
+    env_file: ./backend/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      # ブラウザ（クライアント側）からのAPI URL
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      # サーバーサイド（Middleware）からのAPI URL
+      - SERVER_API_URL=http://backend:8000
+    depends_on:
+      - backend
+
+  db:
+    # pgvector 拡張入りの Postgres 15 公式イメージ（vector embedding 対応）
+    image: pgvector/pgvector:pg15
+    container_name: postgres_container_ai_solution
+    env_file: ./backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      # データを永続化するためのボリュームをマウント
+      - ./db_data:/var/lib/postgresql/data
+      # 初回起動時に pgvector 拡張を作成
+      - ./tools/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_user -d ai_solution_db"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_ai_solution
+    ports:
+      - "8080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - db
+
+  migrator:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: ["alembic", "upgrade", "head"]
+
+  # ====================================================================
+  # オプションサービス（テンプレ採用時にプロジェクトで使うものだけ有効化）
+  #
+  # 有効化する際は、対応する以下も合わせてコメントを外してください:
+  #   - backend/.env.example の関連環境変数
+  #   - backend/requirements.txt の関連ライブラリ
+  #   - backend/app/config.py の関連 Settings フィールド
+  # ====================================================================
+
+  # ---- Redis: キャッシュ / セッション / レート制限 / 非同期タスクのブローカー ----
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: redis_ai_solution
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - ./redis_data:/data
+  #   command: ["redis-server", "--appendonly", "yes"]
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
+
+  # ---- MinIO: S3互換のオブジェクトストレージ（本番の AWS S3 に対応） ----
+  # minio:
+  #   image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+  #   container_name: minio_ai_solution
+  #   command: server /data --console-address ":9001"
+  #   ports:
+  #     - "9000:9000"  # S3 API
+  #     - "9001:9001"  # Console (Web UI)
+  #   environment:
+  #     MINIO_ROOT_USER: minioadmin
+  #     MINIO_ROOT_PASSWORD: minioadmin
+  #   volumes:
+  #     - ./minio_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "mc", "ready", "local"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+
+  # ---- MinIO 初期セットアップ: デフォルトバケットを作成 ----
+  # minio-init:
+  #   image: minio/mc:RELEASE.2025-01-17T23-25-50Z
+  #   container_name: minio_init_ai_solution
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     mc alias set local http://minio:9000 minioadmin minioadmin &&
+  #     mc mb --ignore-existing local/ai-solution-bucket &&
+  #     mc anonymous set download local/ai-solution-bucket &&
+  #     echo 'MinIO bucket setup complete';
+  #     "
+
+  # ---- ElasticMQ: SQS互換のメッセージキュー（本番の AWS SQS に対応） ----
+  # elasticmq:
+  #   image: softwaremill/elasticmq-native:1.6.11
+  #   container_name: elasticmq_ai_solution
+  #   ports:
+  #     - "9324:9324"  # SQS API
+  #     - "9325:9325"  # Web UI
+  #   volumes:
+  #     - ./tools/elasticmq/elasticmq.conf:/opt/elasticmq.conf:ro

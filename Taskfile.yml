@@ -1,0 +1,116 @@
+version: '3'
+
+vars:
+  FRONTEND_DIR: frontend
+  BACKEND_DIR: backend
+
+tasks:
+  default:
+    desc: コマンド一覧を表示
+    cmds:
+      - task --list
+    silent: true
+
+  # Docker
+  up:
+    desc: 起動
+    cmds:
+      - docker compose up
+
+  down:
+    desc: 停止
+    cmds:
+      - docker compose down
+
+  build:
+    desc: ビルド
+    cmds:
+      - docker compose build
+
+  logs:
+    desc: ログ表示
+    cmds:
+      - docker compose logs -f
+
+  # 開発
+  test:
+    desc: テスト実行（Backend）
+    cmds:
+      - docker compose exec backend pytest -v
+
+  test-all:
+    desc: テスト実行（Backend + Frontend）
+    cmds:
+      - task: test
+      - echo ""
+      - echo "=== Frontend Test ==="
+      - cd {{.FRONTEND_DIR}} && npm test
+
+  lint:
+    desc: Lint（Backend）
+    cmds:
+      - docker compose exec backend ruff check --fix .
+
+  lint-all:
+    desc: Lint（Backend + Frontend）
+    cmds:
+      - task: lint
+      - echo ""
+      - echo "=== Frontend Lint ==="
+      - cd {{.FRONTEND_DIR}} && npm run lint
+
+  format:
+    desc: Format（Backend）
+    cmds:
+      - docker compose exec backend ruff format .
+
+  format-all:
+    desc: Format（Backend + Frontend）
+    cmds:
+      - task: format
+      - echo ""
+      - echo "=== Frontend Format ==="
+      - cd {{.FRONTEND_DIR}} && npm run format
+
+  onion-check:
+    desc: Onion Architecture依存関係チェック
+    cmds:
+      - docker compose run --rm backend python scripts/check_onion_architecture.py
+
+  # DB
+  db-migrate:
+    desc: "マイグレーション作成（使用法: task db-migrate -- 'message'）"
+    cmds:
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Usage: task db-migrate -- 'message'"
+          exit 1
+        fi
+      - docker compose run --rm migrator alembic revision --autogenerate -m "{{.CLI_ARGS}}"
+
+  db-upgrade:
+    desc: マイグレーション適用
+    cmds:
+      - docker compose run --rm migrator alembic upgrade head
+
+  # セキュリティ
+  generate-rsa-keys:
+    desc: JWT用RSA鍵ペア生成
+    cmds:
+      - docker compose exec backend python scripts/generate_rsa_keys.py
+
+  # クリーンアップ
+  clean:
+    desc: キャッシュ・一時ファイル削除
+    cmds:
+      - rm -rf {{.FRONTEND_DIR}}/node_modules/.cache
+      - find {{.BACKEND_DIR}} -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+      - find {{.BACKEND_DIR}} -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
+      - find {{.BACKEND_DIR}} -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
+      - find {{.BACKEND_DIR}} -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+      - find . -type d -empty -not -path './.git/*' -delete 2>/dev/null || true
+
+  docker-clean:
+    desc: Docker作成ファイル削除（.next等）
+    cmds:
+      - docker compose run --rm frontend rm -rf /app/.next

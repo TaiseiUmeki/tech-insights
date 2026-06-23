@@ -1,0 +1,25 @@
+name: CI - Showcase Sync Check
+
+on:
+  pull_request:
+    paths:
+      - "frontend/src/shared/ui/**"
+      - "frontend/src/widgets/**"
+      - ".github/workflows/showcase-sync-check.yml"
+
+concurrency:
+  group: showcase-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check /dev/ui showcase is up to date
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # git diff で base branch と比較するために必要
+
+      - name: Run showcase sync check
+        run: bash frontend/scripts/check-showcase-sync.sh
