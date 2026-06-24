@@ -8,13 +8,12 @@ pydantic-settings==2.6.1
 sqlalchemy==2.0.25
 alembic==1.13.1
 psycopg2-binary==2.9.9
+pgvector==0.3.6
 
-# Security
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-bcrypt==4.0.1
-PyJWT==2.8.0
-cryptography==41.0.7
+# AI / ML
+# sentence-transformers が最新 torch を解決するとCUDA依存が入るため、CPU向けwheelが提供されている版に固定
+torch==2.3.1
+sentence-transformers==3.3.1
 
 # Environment
 python-dotenv==1.0.1

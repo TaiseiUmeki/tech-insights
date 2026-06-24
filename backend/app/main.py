@@ -5,9 +5,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.config import get_settings
+from app.infrastructure.csv.article_csv_importer import ArticleCsvImporter
+from app.infrastructure.db.session import SessionLocal
+from app.infrastructure.embedding.local_embedding_service import LocalEmbeddingService
 from app.infrastructure.logging.logging import setup_logging
-from app.presentation.api.auth_api import router as auth_router
-from app.presentation.api.user_api import router as user_router
+from app.presentation.api.article_api import article_router
+from app.presentation.api.author_api import author_router
+from app.presentation.api.category_api import category_router
+from app.presentation.api.reindex_job_api import reindex_router
 from app.presentation.handlers import register_exception_handlers
 
 # ロギングの設定を初期化
@@ -53,8 +59,27 @@ app.add_middleware(
 register_exception_handlers(app)
 
 # API ルーターをアプリケーションに含める
-app.include_router(auth_router)
-app.include_router(user_router)
+app.include_router(article_router)
+app.include_router(category_router)
+app.include_router(author_router)
+app.include_router(reindex_router)
+
+
+@app.on_event('startup')
+def import_articles_on_startup() -> None:
+    """Docker起動時にCSVを冪等インポートする"""
+    settings = get_settings()
+    if not settings.auto_import_articles:
+        return
+
+    db = SessionLocal()
+    try:
+        importer = ArticleCsvImporter(db, LocalEmbeddingService())
+        imported = importer.import_if_needed(settings.articles_csv_path)
+        if imported:
+            print(f'Imported {imported} articles from CSV')
+    finally:
+        db.close()
 
 
 # ヘルスチェックエンドポイント（ALB/ECS用）

@@ -106,10 +106,6 @@ pytest
 - **SQLAlchemy** - ORM
 - **Alembic** - マイグレーション管理
 
-### 認証
-- **JWT (RS256)** - Cookie-based認証
-- **PassLib** - パスワードハッシュ化
-
 ### 開発ツール
 - **Ruff** - 高速Linter
 - **Black** - コードフォーマッター

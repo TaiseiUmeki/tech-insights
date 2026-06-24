@@ -12,16 +12,7 @@ name: Deploy (Manual Approval)
 # 4. DBマイグレーション (Alembic)
 
 on:
-  push:
-    branches:
-      - develop  # Staging環境へデプロイ (要承認)
-      - main     # Production環境へデプロイ (要承認)
-    paths:
-      - 'infra/**'
-      - 'backend/**'
-      - '.github/workflows/deploy-manual.yml'
-
-  workflow_dispatch:  # 手動実行も可能
+  workflow_dispatch:
     inputs:
       environment:
         description: 'デプロイ先環境'

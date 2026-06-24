@@ -1,238 +1,238 @@
-# AI Solution Template
+# TechInsight
 
-**Next.js 15 + FastAPI + AWS CDK** で構築されたエンタープライズグレードのフルスタックテンプレート
+AI 搭載型ナレッジベース「TechInsight」です。技術記事データを PostgreSQL に取り込み、記事の CRUD、キーワード検索、セマンティック検索、ハイブリッド検索をローカル環境で再現できる Web アプリケーションとして実装しています。
 
-## 📖 プロジェクト概要
+このリポジトリはコーディング試験の提出物です。評価者が API キーを持っていない前提で、Docker Compose により Database、Backend API、Frontend をワンコマンドで起動できる構成にしています。
 
-このリポジトリは、受託の新規プロジェクトを素早く立ち上げるための開発基盤テンプレートです。
+## 概要
 
-### 🎯 このリポジトリの役割
+| 分類 | 内容 |
+|---|---|
+| データ移行 | `docs/articles.csv` の 1,000 件の記事を初回起動時に DB へ取り込み |
+| 記事管理 | 記事一覧、詳細表示、作成、編集、削除 |
+| 検索 | キーワード検索、セマンティック検索、ハイブリッド検索 |
+| AI/ML | ローカル embedding model による記事本文のベクトル化 |
+| UI | `/articles` で記事一覧、検索、詳細/作成/編集/削除モーダルを提供 |
+| API | FastAPI による RESTful API と OpenAPI / Swagger 仕様 |
 
-- **フロントエンド**: Next.js 15 (App Router) + FSD アーキテクチャ
-- **バックエンド**: FastAPI + オニオンアーキテクチャ
-- **インフラ**: AWS CDK + 4層レイヤードアーキテクチャ
-- **CI/CD**: GitHub Actions + AWS OIDC
+## 技術スタック
 
-### 技術スタック
+| 領域 | 採用技術 |
+|---|---|
+| Backend | Python 3.11、FastAPI、SQLAlchemy、Alembic、Pytest、Ruff |
+| Frontend | Next.js 15、React 19、TypeScript、TanStack Query、nuqs、shadcn/ui、Jest |
+| Database | PostgreSQL 15、pgvector、pg_trgm、Full Text Search |
+| AI/ML | sentence-transformers、`intfloat/multilingual-e5-small` |
+| Infrastructure | Docker Compose |
 
-#### Frontend
+## 起動方法
 
-- **Next.js 15.3.2** (App Router) + **React 19.2.0** + **TypeScript 5.4.5**
-- **shadcn/ui** + **Tailwind CSS 3.4.3**
-- **Redux Toolkit 2.2.0** (グローバル状態管理)
-- **TanStack React Query 5.28.0** (サーバー状態管理)
-- **React Hook Form 7.51.0** + **Zod 3.22.4** (フォーム管理)
+### 前提条件
 
-#### Backend
+- Docker Desktop
+- Docker Compose
+- Taskfile を使う場合のみ `task`
 
-- **FastAPI** + **Python 3.11+**
-- **PostgreSQL 15**
-- **JWT 認証** (RS256)
-- **SQLAlchemy** (ORM)
+### 1. 環境変数
 
-#### Infrastructure
+通常は同梱の `backend/.env` で起動できます。必要に応じて `backend/.env.example` を参考にしてください。
 
-- **Docker** + **Docker Compose**
-- **AWS CDK** (TypeScript)
-- **GitHub Actions**
-
----
-
-### アクセス
-
-起動後、以下の URL にアクセスできます：
-
-- **フロントエンド**: http://localhost:3000
-- **バックエンド API**: http://localhost:8000
-- **Swagger UI**: http://localhost:8000/docs
-- **pgAdmin**: http://localhost:5050
-
-> Postgres は `pgvector/pgvector:pg15` を使用しており、ベクトル拡張 (`CREATE EXTENSION vector`) が初回起動時に自動有効化されます。既存ボリュームを使い続ける場合は手動で `CREATE EXTENSION IF NOT EXISTS vector;` を実行してください。
-
-#### オプションサービス（コメントアウトで有効化）
-
-以下はテンプレートに同梱されていますが、`docker-compose.yml` で**コメントアウトされている**ため標準では起動しません。プロジェクトで使うことが決まった時点で、対応する4ファイルのコメントを外してください。
-
-| サービス | 用途 | アクセス先 |
-| --- | --- | --- |
-| **Redis** | キャッシュ / セッション / レート制限 / 非同期タスクのブローカー | `redis://localhost:6379` |
-| **MinIO** | S3互換ストレージ（本番の AWS S3 に対応） | Console `http://localhost:9001` (ID/PW: `minioadmin` / `minioadmin`) |
-| **ElasticMQ** | SQS互換キュー（本番の AWS SQS に対応） | UI `http://localhost:9325` |
-
-各サービスを有効化する手順（例: Redis）:
-
-1. `docker-compose.yml` の `# ---- Redis: ... ----` ブロックのコメントを外す
-2. `backend/.env.example`（および手元の `.env`）の `# REDIS_URL=...` のコメントを外す
-3. `backend/requirements.txt` の `# redis[hiredis]==...` のコメントを外す
-4. `backend/app/config.py` の `# redis_url: ...` フィールドのコメントを外す
-5. `docker compose up -d` で再起動
-
-MinIO / ElasticMQ も同様に `# ---- MinIO ----` / `# ---- ElasticMQ ----` ブロックと、関連する `AWS_*` / `S3_*` / `SQS_*` 設定のコメントを外して有効化します。
-
-### 開発環境のセットアップ
-
-#### pre-commit（コミット前チェック）
+### 2. アプリケーション起動
 
 ```bash
-# pre-commit をインストール
-pip install pre-commit
-
-# hooks をインストール
-pre-commit install
+docker compose up
 ```
 
-これにより以下が有効になります：
-
-- **main/master ブランチへの直接コミット禁止**
-- **git-secrets による秘密情報の検出**
-
-#### git-secrets（秘密情報の保護）
+または Taskfile を使う場合:
 
 ```bash
-# macOS
-brew install git-secrets
-
-# セットアップスクリプトを実行
-tools/setup-git-secrets.sh
+task up
 ```
 
-検出される秘密情報：
+`docker compose up` では以下が実行されます。
 
-- AWS 認証情報（Access Key ID, Secret Access Key）
-- Anthropic API Key（`sk-ant-api...`）
-- OpenAI API Key（`sk-...`）
+- PostgreSQL / pgvector コンテナ起動
+- Alembic migration 実行
+- `docs/articles.csv` の初期インポート
+- Backend API 起動
+- Frontend 起動
 
----
+初回起動時は Docker image build、Python / npm 依存関係の取得、embedding model の取得に時間がかかる場合があります。
 
-## 📚 ドキュメント構成
+### 3. アクセス先
 
-ドキュメントは **3つの責務** で整理されています。
+| 用途 | URL |
+|---|---|
+| Frontend | http://localhost:3000/articles |
+| Backend API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/docs |
+| pgAdmin | http://localhost:8080 |
 
-### 📐 アーキテクチャ設計 ([`docs/rules/architecture`](./docs/rules/architecture))
+pgAdmin の初期ログイン:
 
-システムの設計思想と構造を理解するためのドキュメント
+- Email: `admin@example.com`
+- Password: `admin`
 
-- **[フロントエンド](./docs/rules/architecture/FRONTEND.md)** - FSD アーキテクチャ、レイヤー構成
-- **[バックエンド](./docs/rules/architecture/BACKEND.md)** - オニオンアーキテクチャ、依存関係ルール
-- **[インフラ](./docs/rules/architecture/INFRASTRUCTURE.md)** - 4層レイヤードアーキテクチャ、スタック構成
+## 使い方
 
-### 💻 開発ガイド ([`docs/rules/development`](./docs/rules/development))
+### 記事一覧・検索
 
-実装方法とコーディング規約のドキュメント
+`/articles` で記事一覧を表示できます。検索欄にキーワードまたは自然文を入力し、検索モードを切り替えて検索します。
 
-- **[フロントエンド開発](./docs/rules/development/FRONTEND.md)** - 環境構築、開発フロー、API連携
-- **[バックエンド開発](./docs/rules/development/BACKEND.md)** - 実装済み機能、開発の流れ
-- **[テスト](./docs/rules/development/TESTING.md)** - ユニットテスト、結合テスト
+| 検索モード | 用途 | 実装 |
+|---|---|---|
+| keyword | 明確な技術用語で探す | PostgreSQL Full Text Search + pg_trgm |
+| semantic | 自然文の意味に近い記事を探す | pgvector cosine similarity |
+| hybrid | 用語一致と意味的類似の両方で探す | keyword と semantic の RRF 融合 |
 
-### ⚙️ 運用・セットアップ ([`docs/rules/operations`](./docs/rules/operations))
+### 記事管理
 
-デプロイ、カスタマイズ、運用のドキュメント
+画面上から以下の操作ができます。
 
-- **[カスタマイズガイド](./docs/rules/operations/CUSTOMIZATION.md)** - 新規プロジェクト開始時必読
-- **[PoCセットアップ](./docs/rules/operations/POC_SETUP_GUIDE.md)** - PoC Stack構成
-- **[CI/CDガイド](./docs/rules/operations/CI_CD_GUIDE.md)** - GitHub Actionsワークフロー
-- **[CI/CDセットアップ](./docs/rules/operations/CI_CD_SETUP.md)** - AWS OIDC設定
-- **[データベース変更ガイド](./docs/rules/operations/DATABASE_CHANGE.md)** - DB種類の変更手順
-- **[リビジョン履歴](./docs/revision/)** - テンプレートの変更履歴（日付別）
+- 記事詳細の確認
+- 新規記事の作成
+- 既存記事の編集
+- 記事の物理削除
 
----
+このアプリではユーザー認証・認可は実装対象外です。評価者がローカルで機能を確認しやすいように、同一ユーザーで閲覧・管理操作を行う前提にしています。
 
-## 📂 ディレクトリ構成
+### モーダルURL
 
+画面設計に合わせ、モーダル状態はURLクエリで表現します。
+
+| URL | 表示 |
+|---|---|
+| `/articles` | 記事一覧・検索画面 |
+| `/articles?articleId={id}` | 記事詳細モーダル |
+| `/articles?modal=create` | 記事作成モーダル |
+| `/articles?articleId={id}&modal=edit` | 記事編集モーダル |
+| `/articles?articleId={id}&modal=delete` | 削除確認ダイアログ |
+
+## API
+
+API は RESTful に構成しています。代表的なエンドポイントは以下です。
+
+| Method | Path | 用途 |
+|---|---|---|
+| GET | `/api/articles` | 記事一覧取得、検索 |
+| POST | `/api/articles` | 記事作成 |
+| GET | `/api/articles/{articleId}` | 記事詳細取得 |
+| PUT | `/api/articles/{articleId}` | 記事更新 |
+| DELETE | `/api/articles/{articleId}` | 記事削除 |
+| GET | `/api/articles/{articleId}/related-articles` | 関連記事取得 |
+| GET | `/api/categories` | カテゴリ一覧取得 |
+| GET | `/api/authors` | 著者一覧取得 |
+
+API 仕様は以下でも確認できます。
+
+- Swagger UI: http://localhost:8000/docs
+- OpenAPI JSON: [backend/documents/api/openapi.json](./backend/documents/api/openapi.json)
+- Swagger HTML: [backend/documents/api/swagger.html](./backend/documents/api/swagger.html)
+
+## 設計方針
+
+### UI/UX
+
+- 一覧、検索、詳細、作成、編集、削除を `/articles` 中心で操作できる構成にしています。
+- 詳細、作成、編集、削除モーダルはURLクエリと同期します。
+- 検索モードは `keyword`、`semantic`、`hybrid` を明示的に切り替えられるようにしています。
+- 編集時の著者・カテゴリは既存マスタから選択します。
+- 検索結果 0 件、API エラー、読み込み中の状態を画面上で扱います。
+
+### DB
+
+- `articles`、`categories`、`authors` を分け、カテゴリ名や著者名をマスタとして扱います。
+- CSV 再投入時の冪等性は `source_article_id` で担保します。
+- 論理削除は採用せず、記事削除は物理削除で行います。
+- 1 万件程度への増加を想定し、BTREE、GIN、HNSW index を利用します。
+- セマンティック検索用 embedding は `articles.embedding vector(384)` に保存します。
+
+### チーム開発
+
+- Backend は Onion Architecture に沿って、domain、application、infrastructure、presentation を分離しています。
+- Frontend は Feature-Sliced Design に沿って、shared、entities、features、widgets、page-components、app を分離しています。
+- API 仕様は FastAPI から OpenAPI として生成し、Frontend / Backend 間の契約を確認しやすくしています。
+- 設計書を `docs/requirements/` 配下に整理しています。
+
+### 保守運用・スケーラビリティ
+
+- Docker Compose でローカル再現性を確保しています。
+- DB schema は Alembic migration で管理します。
+- CSV 初期投入は起動時に実行され、既存データを重複投入しない設計です。
+- Backend / Frontend / showcase sync の検証コマンドを分け、変更範囲に応じて確認できます。
+
+## 開発・検証コマンド
+
+プロジェクトルートで実行します。
+
+| コマンド | 内容 |
+|---|---|
+| `task up` | Docker Compose で起動 |
+| `task down` | Docker Compose を停止 |
+| `task build` | Docker image を build |
+| `task logs` | コンテナログを表示 |
+| `task db-upgrade` | Alembic migration を開発DBへ適用 |
+| `task db-upgrade-test` | Alembic migration をテストDBへ適用 |
+| `task db-upgrade-all` | Alembic migration を開発DBとテストDBへ適用 |
+| `task test` | Backend の pytest を実行 |
+| `task test-all` | Backend pytest と Frontend Jest を実行 |
+| `task lint` | Backend の Ruff check を実行 |
+| `task onion-check` | Onion Architecture 依存関係チェック |
+
+CI 相当の確認をローカルで行う場合:
+
+```bash
+# Backend
+docker compose exec backend ruff check .
+docker compose exec backend ruff format --check .
+docker compose run --rm backend python scripts/check_onion_architecture.py
+docker compose exec backend pytest -v
+
+# Frontend
+docker compose exec frontend npm run type-check
+docker compose exec frontend npm test -- --ci
+docker compose exec -e NODE_ENV=production frontend npm run build
+
+# UI showcase
+bash frontend/scripts/check-showcase-sync.sh
 ```
-ai-solution-template/
-├── frontend/          # Next.js フロントエンド
-│   └── README.md      # フロントエンド固有のドキュメント
-├── backend/           # FastAPI バックエンド
-│   └── README.md      # バックエンド固有のドキュメント
-├── infra/             # AWS CDK インフラ定義
-│   └── README.md      # インフラ固有のドキュメント
-├── .github/
-│   └── workflows/     # GitHub Actions ワークフロー
-│       └── README.md  # CI/CD固有のドキュメント
-├── docs/              # プロジェクト全体のドキュメント
-│   └── rules/         # ルール・ガイドライン
-│       ├── architecture/  # アーキテクチャ設計
-│       ├── development/   # 開発ガイド
-│       └── operations/    # 運用・セットアップ
-└── README.md          # このファイル
+
+Backend の pytest は `ai_solution_test_db` を使用します。テストDBは pytest または
+`task db-upgrade-test` 実行時に作成され、Alembic migration で開発DBと同じ schema に揃えます。
+開発DB `ai_solution_db` に対して `Base.metadata.drop_all()` は実行しません。
+
+## ドキュメント
+
+提出物に対応する主要ドキュメントです。
+
+| ドキュメント | 内容 |
+|---|---|
+| [docs/テスト要件.md](./docs/テスト要件.md) | コーディング試験の要件 |
+| [docs/requirements/要件定義書.md](./docs/requirements/要件定義書.md) | 機能要件 |
+| [docs/requirements/DB設計書.md](./docs/requirements/DB設計書.md) | DB 設計 |
+| [docs/requirements/API設計書.md](./docs/requirements/API設計書.md) | API 設計 |
+| [docs/requirements/画面設計書.md](./docs/requirements/画面設計書.md) | 画面設計 |
+| [docs/requirements/検索アルゴリズム.md](./docs/requirements/検索アルゴリズム.md) | 検索方式とアルゴリズム |
+| [docs/requirements/アーキテクチャ設計書.md](./docs/requirements/アーキテクチャ設計書.md) | Backend / Frontend 詳細設計 |
+
+## ディレクトリ構成
+
+```text
+coding_test/
+├── backend/              # FastAPI Backend
+├── frontend/             # Next.js Frontend
+├── docs/
+│   ├── articles.csv      # 初期投入用CSV
+│   ├── テスト要件.md
+│   └── requirements/     # 要件定義、DB設計、API設計、画面設計
+├── tools/                # PostgreSQL 初期化などの補助スクリプト
+├── docker-compose.yml
+├── Taskfile.yml
+└── README.md
 ```
 
-各ディレクトリの詳細は、それぞれのREADME.mdを参照してください：
+## 補足
 
-- **[frontend/README.md](./frontend/README.md)** - フロントエンド開発
-- **[backend/README.md](./backend/README.md)** - バックエンド開発
-- **[infra/README.md](./infra/README.md)** - インフラ管理
-- **[.github/workflows/README.md](./.github/workflows/README.md)** - CI/CD設定
-
----
-
-## 💻 開発コマンド（Taskfile）
-
-プロジェクトルートで `task` または `task --list` を実行すると全コマンドを確認できます。
-
-> [Taskfile](https://taskfile.dev) を使用しています。インストール: `brew install go-task/tap/go-task`
-
-### Docker
-
-| コマンド     | 説明                               |
-| ------------ | ---------------------------------- |
-| `task up`    | 全サービスをバックグラウンドで起動 |
-| `task down`  | 全サービスを停止                   |
-| `task build` | Dockerイメージをビルド             |
-| `task logs`  | ログをリアルタイム表示             |
-
-### 開発
-
-| コマンド           | 説明                                     |
-| ------------------ | ---------------------------------------- |
-| `task test`        | テスト実行（Backend）                    |
-| `task test-all`    | テスト実行（Backend + Frontend）         |
-| `task lint`        | Lint（Backend）                          |
-| `task lint-all`    | Lint（Backend + Frontend）               |
-| `task format`      | Format（Backend）                        |
-| `task format-all`  | Format（Backend + Frontend）             |
-| `task onion-check` | オニオンアーキテクチャの依存関係チェック |
-
-### クリーンアップ
-
-| コマンド             | 説明                                  |
-| -------------------- | ------------------------------------- |
-| `task clean`         | キャッシュ・一時ファイル削除          |
-| `task docker-clean`  | Docker作成ファイル削除（.next等）     |
-
-### データベース
-
-| コマンド                            | 説明                           |
-| ----------------------------------- | ------------------------------ |
-| `task db-migrate -- 'message'`      | マイグレーションファイルを作成 |
-| `task db-upgrade`                   | マイグレーションを適用         |
-
-### セキュリティ
-
-| コマンド                 | 説明                   |
-| ------------------------ | ---------------------- |
-| `task generate-rsa-keys` | JWT用のRSA鍵ペアを生成 |
-
----
-
-## 🎨 このテンプレートをカスタマイズする
-
-新しいプロジェクトを開始する際は、以下のドキュメントを参照してください：
-
-**[カスタマイズガイド](./docs/rules/operations/CUSTOMIZATION.md)**
-
----
-
-## 📖 API仕様
-
-- **Swagger UI**: http://localhost:8000/docs
-- **OpenAPI 仕様書**: [openapi.json](./backend/documents/api/openapi.json)
-- **Swagger HTML**: [swagger.html](./backend/documents/api/swagger.html)
-
-main ブランチへの push 時、`backend/app/presentation/`配下のファイルが変更されると、GitHub Actions によって自動的にドキュメントが更新されます。
-
----
-
-**最終更新**: 2026-02-11
-**バージョン**: 3.0.0
+- 外部 API キーは不要です。
+- embedding model はローカルで動作するため、初回起動時にモデル取得が発生します。
+- ユーザー認証・認可、本番クラウドデプロイ、権限管理は今回の対象外です。

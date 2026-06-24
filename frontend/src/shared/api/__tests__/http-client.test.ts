@@ -13,11 +13,13 @@ describe('httpClient', () => {
   beforeEach(() => {
     // window.location をモック
     locationHref = 'http://localhost:3000';
-    delete (window as any).location;
-    window.location = {
-      ...originalLocation,
-      href: locationHref,
-    } as Location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...originalLocation,
+        href: locationHref,
+      },
+    });
 
     Object.defineProperty(window.location, 'href', {
       get: () => locationHref,
@@ -33,30 +35,27 @@ describe('httpClient', () => {
 
   afterEach(() => {
     // window.location を復元
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
   });
 
   describe('基本設定', () => {
     it('baseURLが正しく設定されている', async () => {
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       expect(httpClient.defaults.baseURL).toBe(API_BASE_URL);
     });
 
     it('timeoutが正しく設定されている', async () => {
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       expect(httpClient.defaults.timeout).toBe(10000);
     });
 
     it('withCredentialsが有効になっている', async () => {
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       expect(httpClient.defaults.withCredentials).toBe(true);
     });
@@ -72,27 +71,23 @@ describe('httpClient', () => {
         }),
       );
 
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       await expect(httpClient.get('/protected')).rejects.toThrow();
     });
 
-    it('/auth/statusの401はリダイレクトしない', async () => {
+    it('401エラー時にリダイレクトしない', async () => {
       server.use(
-        http.get(`${API_BASE_URL}/auth/status`, () => {
+        http.get(`${API_BASE_URL}/unauthorized`, () => {
           return HttpResponse.json({ detail: 'Unauthorized' }, { status: 401 });
         }),
       );
 
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       const initialHref = locationHref;
 
-      await expect(httpClient.get('/auth/status')).rejects.toThrow();
+      await expect(httpClient.get('/unauthorized')).rejects.toThrow();
 
       // リダイレクトは発生しない
       expect(locationHref).toBe(initialHref);
@@ -105,9 +100,7 @@ describe('httpClient', () => {
         }),
       );
 
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       const response = await httpClient.get('/test');
 
@@ -123,9 +116,7 @@ describe('httpClient', () => {
         }),
       );
 
-      const { httpClient } = await import(
-        '@/shared/api/client/http-client'
-      );
+      const { httpClient } = await import('@/shared/api/client/http-client');
 
       await expect(httpClient.get('/network-error')).rejects.toThrow();
     });

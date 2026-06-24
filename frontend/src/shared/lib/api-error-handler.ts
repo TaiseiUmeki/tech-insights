@@ -53,8 +53,7 @@ export function handleApiError(
     if (error.response?.status === 403) return true;
 
     toast.error(defaultMessage, {
-      description:
-        extractDetail(error.response?.data?.detail) || error.message,
+      description: extractDetail(error.response?.data?.detail) || error.message,
     });
     return false;
   }

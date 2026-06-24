@@ -35,7 +35,7 @@ import { useUnsavedChangesStore } from '../model/unsaved-changes-store';
  * ```
  *
  * @remarks
- * - ダイアログUIは `(authenticated)/layout.tsx` に配置済み
+ * - ダイアログUIは利用画面側に配置する
  * - 複数コンポーネントで同時に使用可能（内部でIDで管理）
  * - コンポーネントのアンマウント時に自動で登録解除
  */
