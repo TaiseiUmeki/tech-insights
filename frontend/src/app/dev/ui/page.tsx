@@ -5,14 +5,13 @@ import { DialogsShowcase } from './_components/shared/DialogsShowcase';
 import { FeedbackShowcase } from './_components/shared/FeedbackShowcase';
 import { FormFieldsShowcase } from './_components/shared/FormFieldsShowcase';
 import { ShadcnShowcase } from './_components/shared/ShadcnShowcase';
+import { ArticleWidgetsShowcase } from './_components/widgets/ArticleWidgetsShowcase';
 import { NavigationShowcase } from './_components/widgets/NavigationShowcase';
 
 const navSections = [
   {
     category: 'Dialogs',
-    items: [
-      { id: 'delete-confirm-modal', label: 'DeleteConfirmModal' },
-    ],
+    items: [{ id: 'delete-confirm-modal', label: 'DeleteConfirmModal' }],
   },
   {
     category: 'Feedback',
@@ -40,6 +39,18 @@ const navSections = [
   {
     category: 'Navigation',
     items: [{ id: 'app-sidebar', label: 'AppSidebar' }],
+  },
+  {
+    category: 'Article Widgets',
+    items: [
+      { id: 'article-card', label: 'ArticleCard' },
+      { id: 'search-toolbar', label: 'SearchToolbar' },
+      { id: 'article-empty-state', label: 'ArticleEmptyState' },
+      { id: 'article-error-state', label: 'ArticleErrorState' },
+      { id: 'article-form', label: 'ArticleForm' },
+      { id: 'article-delete-dialog', label: 'ArticleDeleteDialog' },
+      { id: 'article-detail-modal', label: 'ArticleDetailModal' },
+    ],
   },
   {
     category: 'Shadcn',
@@ -73,6 +84,7 @@ export default function UIShowcasePage() {
           <FeedbackShowcase />
           <FormFieldsShowcase />
           <NavigationShowcase />
+          <ArticleWidgetsShowcase />
           <ShadcnShowcase />
         </main>
       </div>

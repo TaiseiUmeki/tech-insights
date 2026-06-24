@@ -44,7 +44,7 @@ tasks:
       - task: test
       - echo ""
       - echo "=== Frontend Test ==="
-      - cd {{.FRONTEND_DIR}} && npm test
+      - docker compose exec frontend npm test
 
   lint:
     desc: Lint（Backend）

@@ -6,11 +6,16 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.interfaces.security_service import ISecurityService
 from app.domain.repositories.user_repository import IUserRepository
+from app.infrastructure.db.models.article_model import (  # noqa: F401
+    ArticleModel,
+    AuthorModel,
+    CategoryModel,
+)
 from app.infrastructure.db.models.base import Base
 from app.infrastructure.db.models.user_model import UserModel  # noqa: F401
 
@@ -25,6 +30,10 @@ TEST_DATABASE_URL = os.getenv(
 def test_db_engine():
     """テスト用DBエンジン（セッションスコープ）"""
     engine = create_engine(TEST_DATABASE_URL, echo=False)
+    with engine.connect() as connection:
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS vector'))
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
+        connection.commit()
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -60,6 +69,7 @@ def mock_security_service() -> MagicMock:
 def test_client(test_db_engine) -> Generator[TestClient, None, None]:
     """FastAPI TestClient（セッションスコープ）"""
     os.environ['ENABLE_AUTH'] = 'false'
+    os.environ['AUTO_IMPORT_ARTICLES'] = 'false'
 
     from app.config import get_settings
 

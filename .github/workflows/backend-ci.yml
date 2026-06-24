@@ -73,7 +73,7 @@ jobs:
     # テスト用のDBコンテナを立ち上げる設定
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg15
         env:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password

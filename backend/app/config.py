@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     stage: str = 'development'  # デフォルトは開発環境
     database_url: str = ''
+    auto_import_articles: bool = False
+    articles_csv_path: str = 'docs/articles.csv'
+    embedding_model_name: str = 'intfloat/multilingual-e5-small'
+    search_candidate_multiplier: int = 5
 
     # 認証機能の有効/無効
     enable_auth: bool = True
