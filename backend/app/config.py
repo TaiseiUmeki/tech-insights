@@ -24,15 +24,6 @@ class Settings(BaseSettings):
     embedding_model_name: str = 'intfloat/multilingual-e5-small'
     search_candidate_multiplier: int = 5
 
-    # 認証機能の有効/無効
-    enable_auth: bool = True
-
-    # JWT settings
-    jwt_expiration_hours: str = '24'
-    jwt_algorithm: str = 'RS256'  # RS256 for RSA, HS256 for HMAC (deprecated)
-    jwt_private_key: str = ''  # RSA private key for signing (RS256)
-    jwt_public_key: str = ''  # RSA public key for verification (RS256)
-
     # ---- Optional: docker-compose.yml で対応サービスを有効化したらコメントを外す ----
     # AWS / S3 (MinIO in local) — endpoint_url が空なら本物の AWS S3 を使う
     # aws_region: str = 'ap-northeast-1'

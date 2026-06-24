@@ -6,7 +6,6 @@ import { FeedbackShowcase } from './_components/shared/FeedbackShowcase';
 import { FormFieldsShowcase } from './_components/shared/FormFieldsShowcase';
 import { ShadcnShowcase } from './_components/shared/ShadcnShowcase';
 import { ArticleWidgetsShowcase } from './_components/widgets/ArticleWidgetsShowcase';
-import { NavigationShowcase } from './_components/widgets/NavigationShowcase';
 
 const navSections = [
   {
@@ -35,10 +34,6 @@ const navSections = [
       { id: 'checkbox-field', label: 'CheckboxField' },
       { id: 'select-field', label: 'SelectField' },
     ],
-  },
-  {
-    category: 'Navigation',
-    items: [{ id: 'app-sidebar', label: 'AppSidebar' }],
   },
   {
     category: 'Article Widgets',
@@ -83,7 +78,6 @@ export default function UIShowcasePage() {
           <DialogsShowcase />
           <FeedbackShowcase />
           <FormFieldsShowcase />
-          <NavigationShowcase />
           <ArticleWidgetsShowcase />
           <ShadcnShowcase />
         </main>

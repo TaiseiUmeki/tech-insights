@@ -4,31 +4,11 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from app.domain.exceptions.business_exceptions import (
-    AuthenticationError,
-    AuthorizationError,
     BusinessLogicError,
     BusinessValidationError,
     ResourceConflictError,
     ResourceNotFoundError,
 )
-
-
-async def authentication_error_handler(
-    request: Request, exc: AuthenticationError
-) -> JSONResponse:
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={'detail': str(exc)},
-    )
-
-
-async def authorization_error_handler(
-    request: Request, exc: AuthorizationError
-) -> JSONResponse:
-    return JSONResponse(
-        status_code=status.HTTP_403_FORBIDDEN,
-        content={'detail': str(exc)},
-    )
 
 
 async def resource_not_found_error_handler(
@@ -69,8 +49,6 @@ async def business_logic_error_handler(
 
 def register_exception_handlers(app) -> None:
     """アプリケーションに例外ハンドラを登録"""
-    app.add_exception_handler(AuthenticationError, authentication_error_handler)
-    app.add_exception_handler(AuthorizationError, authorization_error_handler)
     app.add_exception_handler(ResourceNotFoundError, resource_not_found_error_handler)
     app.add_exception_handler(ResourceConflictError, resource_conflict_error_handler)
     app.add_exception_handler(BusinessValidationError, business_validation_error_handler)

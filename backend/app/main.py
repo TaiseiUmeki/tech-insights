@@ -16,8 +16,6 @@ from app.presentation.api.article_api import (
     category_router,
     reindex_router,
 )
-from app.presentation.api.auth_api import router as auth_router
-from app.presentation.api.user_api import router as user_router
 from app.presentation.handlers import register_exception_handlers
 
 # ロギングの設定を初期化
@@ -63,8 +61,6 @@ app.add_middleware(
 register_exception_handlers(app)
 
 # API ルーターをアプリケーションに含める
-app.include_router(auth_router)
-app.include_router(user_router)
 app.include_router(article_router)
 app.include_router(category_router)
 app.include_router(author_router)
