@@ -5,6 +5,7 @@ import { DialogsShowcase } from './_components/shared/DialogsShowcase';
 import { FeedbackShowcase } from './_components/shared/FeedbackShowcase';
 import { FormFieldsShowcase } from './_components/shared/FormFieldsShowcase';
 import { ShadcnShowcase } from './_components/shared/ShadcnShowcase';
+import { ArticleWidgetsShowcase } from './_components/widgets/ArticleWidgetsShowcase';
 import { NavigationShowcase } from './_components/widgets/NavigationShowcase';
 
 const navSections = [
@@ -40,6 +41,18 @@ const navSections = [
     items: [{ id: 'app-sidebar', label: 'AppSidebar' }],
   },
   {
+    category: 'Article Widgets',
+    items: [
+      { id: 'article-card', label: 'ArticleCard' },
+      { id: 'search-toolbar', label: 'SearchToolbar' },
+      { id: 'article-empty-state', label: 'ArticleEmptyState' },
+      { id: 'article-error-state', label: 'ArticleErrorState' },
+      { id: 'article-form', label: 'ArticleForm' },
+      { id: 'article-delete-dialog', label: 'ArticleDeleteDialog' },
+      { id: 'article-detail-modal', label: 'ArticleDetailModal' },
+    ],
+  },
+  {
     category: 'Shadcn',
     items: [{ id: 'shadcn', label: 'Shadcn UI (公式リンク)' }],
   },
@@ -71,6 +84,7 @@ export default function UIShowcasePage() {
           <FeedbackShowcase />
           <FormFieldsShowcase />
           <NavigationShowcase />
+          <ArticleWidgetsShowcase />
           <ShadcnShowcase />
         </main>
       </div>

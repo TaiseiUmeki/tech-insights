@@ -38,4 +38,3 @@ def downgrade() -> None:
     """Downgrade schema."""
     op.execute('DROP INDEX IF EXISTS idx_articles_content_trgm')
     op.execute('DROP INDEX IF EXISTS idx_articles_title_trgm')
-
