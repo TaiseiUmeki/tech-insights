@@ -118,7 +118,7 @@ class DeleteArticleResponse(CamelModel):
 
 
 class ReindexJobRequest(CamelModel):
-    article_id: int | None = Field(None, alias='articleId')
+    article_id: int = Field(..., alias='articleId')
 
 
 class ReindexJobResponse(CamelModel):

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { ArticleDetailResponse } from '@/entities/article/model/api-types';
+import type { AuthorResponse } from '@/entities/author/model/api-types';
+import type { CategoryResponse } from '@/entities/category/model/api-types';
 import type { ArticleFormData } from '@/features/article/create/model/article-form-schema';
 import { articleFormSchema } from '@/features/article/create/model/article-form-schema';
+import { SelectField } from '@/shared/ui/form-fields';
 import { Button } from '@/shared/ui/shadcn/ui/button';
 import { Input } from '@/shared/ui/shadcn/ui/input';
 import { Textarea } from '@/shared/ui/shadcn/ui/textarea';
@@ -13,13 +16,29 @@ function toLocalInputValue(value?: string) {
   return new Date(value).toISOString().slice(0, 16);
 }
 
+function withCurrentOption<T extends { id: number; name: string }>(
+  options: T[],
+  currentName: string,
+) {
+  if (!currentName || options.some((option) => option.name === currentName)) {
+    return options;
+  }
+  return [{ id: 0, name: currentName } as T, ...options];
+}
+
 export function ArticleForm({
   initialArticle,
+  authors = [],
+  categories = [],
+  useMasterSelects = false,
   isSubmitting,
   onSubmit,
   onCancel,
 }: {
   initialArticle?: ArticleDetailResponse | null;
+  authors?: AuthorResponse[];
+  categories?: CategoryResponse[];
+  useMasterSelects?: boolean;
   isSubmitting: boolean;
   onSubmit: (data: ArticleFormData) => void;
   onCancel: () => void;
@@ -50,6 +69,17 @@ export function ArticleForm({
     setFormData((current) => ({ ...current, [key]: value }));
   };
 
+  const categoryOptions = withCurrentOption(categories, formData.categoryName);
+  const authorOptions = withCurrentOption(authors, formData.authorName);
+  const categorySelectOptions = categoryOptions.map((category) => ({
+    value: category.name,
+    label: category.name,
+  }));
+  const authorSelectOptions = authorOptions.map((author) => ({
+    value: author.name,
+    label: author.name,
+  }));
+
   return (
     <form
       className='space-y-4'
@@ -79,20 +109,46 @@ export function ArticleForm({
         />
       </div>
       <div className='grid gap-3 sm:grid-cols-2'>
-        <div className='space-y-1.5'>
-          <label className='text-xs font-medium text-slate-600'>カテゴリ</label>
-          <Input
+        {useMasterSelects ? (
+          <SelectField
+            id='article-category'
+            label='カテゴリ'
             value={formData.categoryName}
-            onChange={(event) => update('categoryName', event.target.value)}
+            onChange={(value) => update('categoryName', value)}
+            options={categorySelectOptions}
+            placeholder='カテゴリを選択'
+            className='space-y-1.5'
           />
-        </div>
-        <div className='space-y-1.5'>
-          <label className='text-xs font-medium text-slate-600'>著者</label>
-          <Input
+        ) : (
+          <div className='space-y-1.5'>
+            <label className='text-xs font-medium text-slate-600'>
+              カテゴリ
+            </label>
+            <Input
+              value={formData.categoryName}
+              onChange={(event) => update('categoryName', event.target.value)}
+            />
+          </div>
+        )}
+        {useMasterSelects ? (
+          <SelectField
+            id='article-author'
+            label='著者'
             value={formData.authorName}
-            onChange={(event) => update('authorName', event.target.value)}
+            onChange={(value) => update('authorName', value)}
+            options={authorSelectOptions}
+            placeholder='著者を選択'
+            className='space-y-1.5'
           />
-        </div>
+        ) : (
+          <div className='space-y-1.5'>
+            <label className='text-xs font-medium text-slate-600'>著者</label>
+            <Input
+              value={formData.authorName}
+              onChange={(event) => update('authorName', event.target.value)}
+            />
+          </div>
+        )}
       </div>
       <div className='space-y-1.5'>
         <label className='text-xs font-medium text-slate-600'>公開日時</label>

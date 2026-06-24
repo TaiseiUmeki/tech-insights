@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { SearchMode } from '@/entities/article/model/api-types';
 import { useCreateArticle } from '@/features/article/create/lib/use-create-article';
 import type { ArticleFormData } from '@/features/article/create/model/article-form-schema';
@@ -29,6 +30,7 @@ import {
 } from '@/shared/ui/shadcn/ui/dialog';
 
 const PAGE_LIMIT = 12;
+type ArticleModal = 'create' | 'edit' | 'delete';
 
 function toRequest(data: ArticleFormData) {
   return {
@@ -41,17 +43,50 @@ function toRequest(data: ArticleFormData) {
 }
 
 export function ArticleHomeContainer() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState('');
   const [searchMode, setSearchMode] = useState<SearchMode>('keyword');
   const [categoryId, setCategoryId] = useState<number | undefined>();
   const [authorId, setAuthorId] = useState<number | undefined>();
   const [page, setPage] = useState(1);
-  const [detailArticleId, setDetailArticleId] = useState<number | null>(null);
-  const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
-  const [deletingArticleId, setDeletingArticleId] = useState<number | null>(
-    null,
-  );
-  const [createOpen, setCreateOpen] = useState(false);
+
+  const modal = searchParams.get('modal') as ArticleModal | null;
+  const articleIdParam = searchParams.get('articleId');
+  const articleId = articleIdParam ? Number(articleIdParam) : null;
+  const selectedArticleId =
+    articleId !== null && Number.isInteger(articleId) && articleId > 0
+      ? articleId
+      : null;
+  const detailArticleId = modal === null ? selectedArticleId : null;
+  const editingArticleId = modal === 'edit' ? selectedArticleId : null;
+  const deletingArticleId = modal === 'delete' ? selectedArticleId : null;
+  const createOpen = modal === 'create';
+
+  const updateModalUrl = ({
+    nextArticleId,
+    nextModal,
+  }: {
+    nextArticleId?: number;
+    nextModal?: ArticleModal;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('articleId');
+    params.delete('modal');
+    if (nextArticleId) {
+      params.set('articleId', String(nextArticleId));
+    }
+    if (nextModal) {
+      params.set('modal', nextModal);
+    }
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  const closeModal = () => updateModalUrl({});
 
   const searchState = useMemo(
     () => ({
@@ -94,7 +129,7 @@ export function ArticleHomeContainer() {
           <div>
             <h1 className='text-xl font-bold text-slate-900'>TechInsights</h1>
           </div>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => updateModalUrl({ nextModal: 'create' })}>
             <Plus className='mr-1.5 h-4 w-4' />
             新規作成
           </Button>
@@ -154,7 +189,7 @@ export function ArticleHomeContainer() {
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  onClick={() => setDetailArticleId(article.id)}
+                  onClick={() => updateModalUrl({ nextArticleId: article.id })}
                 />
               ))}
             </div>
@@ -190,29 +225,32 @@ export function ArticleHomeContainer() {
         articleId={detailArticleId}
         open={detailArticleId !== null}
         onOpenChange={(open) => {
-          if (!open) setDetailArticleId(null);
+          if (!open) closeModal();
         }}
         onEdit={(articleId) => {
-          setDetailArticleId(null);
-          setEditingArticleId(articleId);
+          updateModalUrl({ nextArticleId: articleId, nextModal: 'edit' });
         }}
         onDelete={(articleId) => {
-          setDetailArticleId(null);
-          setDeletingArticleId(articleId);
+          updateModalUrl({ nextArticleId: articleId, nextModal: 'delete' });
         }}
       />
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          if (!open) closeModal();
+        }}
+      >
         <DialogContent className='max-h-[86vh] overflow-y-auto sm:max-w-[680px]'>
           <DialogHeader>
             <DialogTitle>記事作成</DialogTitle>
           </DialogHeader>
           <ArticleForm
             isSubmitting={createMutation.isPending}
-            onCancel={() => setCreateOpen(false)}
+            onCancel={closeModal}
             onSubmit={(data) => {
               createMutation.mutate(toRequest(data), {
-                onSuccess: () => setCreateOpen(false),
+                onSuccess: closeModal,
               });
             }}
           />
@@ -222,7 +260,7 @@ export function ArticleHomeContainer() {
       <Dialog
         open={editingArticleId !== null}
         onOpenChange={(open) => {
-          if (!open) setEditingArticleId(null);
+          if (!open) closeModal();
         }}
       >
         <DialogContent className='max-h-[86vh] overflow-y-auto sm:max-w-[680px]'>
@@ -231,13 +269,16 @@ export function ArticleHomeContainer() {
           </DialogHeader>
           <ArticleForm
             initialArticle={editingArticleQuery.data}
+            categories={categoriesQuery.data?.items ?? []}
+            authors={authorsQuery.data?.items ?? []}
+            useMasterSelects
             isSubmitting={updateMutation.isPending}
-            onCancel={() => setEditingArticleId(null)}
+            onCancel={closeModal}
             onSubmit={(data) => {
               if (!editingArticleId) return;
               updateMutation.mutate(
                 { articleId: editingArticleId, data: toRequest(data) },
-                { onSuccess: () => setEditingArticleId(null) },
+                { onSuccess: closeModal },
               );
             }}
           />
@@ -248,12 +289,12 @@ export function ArticleHomeContainer() {
         open={deletingArticleId !== null}
         isDeleting={deleteMutation.isPending}
         onOpenChange={(open) => {
-          if (!open) setDeletingArticleId(null);
+          if (!open) closeModal();
         }}
         onConfirm={() => {
           if (!deletingArticleId) return;
           deleteMutation.mutate(deletingArticleId, {
-            onSuccess: () => setDeletingArticleId(null),
+            onSuccess: closeModal,
           });
         }}
       />

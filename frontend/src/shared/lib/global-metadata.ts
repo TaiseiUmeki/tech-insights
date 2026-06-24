@@ -8,23 +8,23 @@ export function generateMetadata(): Metadata {
 
   if (environment === 'development') {
     return {
-      title: 'DEV - AI Solution Template',
-      description: 'This is development mode',
+      title: 'DEV - TechInsights',
+      description: 'TechInsights development mode',
       robots: 'noindex, nofollow',
     };
   }
 
   if (environment === 'test') {
     return {
-      title: 'TEST - AI Solution Template',
-      description: 'test environment',
+      title: 'TEST - TechInsights',
+      description: 'TechInsights test environment',
       robots: 'noindex',
     };
   }
 
   return {
-    title: 'AI Solution Template',
-    description: 'Startup template with Next.js and FastAPI',
+    title: 'TechInsights',
+    description: 'AI-powered technical article knowledge base',
     robots: 'index, follow',
   };
 }

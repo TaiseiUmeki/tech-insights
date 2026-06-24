@@ -4,6 +4,17 @@ import type { AuthorResponse } from '@/entities/author/model/api-types';
 import type { CategoryResponse } from '@/entities/category/model/api-types';
 import { Button } from '@/shared/ui/shadcn/ui/button';
 import { Input } from '@/shared/ui/shadcn/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/shadcn/ui/select';
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@/shared/ui/shadcn/ui/toggle-group';
 
 const modes: { value: SearchMode; label: string }[] = [
   { value: 'keyword', label: 'キーワード' },
@@ -60,56 +71,72 @@ export function SearchToolbar({
       </div>
 
       <div className='flex flex-wrap items-center gap-3'>
-        <div className='inline-flex rounded-lg bg-slate-100 p-1'>
+        <ToggleGroup
+          type='single'
+          value={mode}
+          onValueChange={(value) => {
+            if (value) {
+              onModeChange(value as SearchMode);
+            }
+          }}
+          aria-label='検索モード'
+          className='rounded-lg bg-slate-100 p-1'
+        >
           {modes.map((item) => (
-            <button
+            <ToggleGroupItem
               key={item.value}
-              type='button'
-              onClick={() => onModeChange(item.value)}
-              className={`h-7 rounded-md px-3 text-xs font-medium ${
-                mode === item.value
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500'
-              }`}
+              value={item.value}
+              aria-label={item.label}
+              className='h-7 rounded-md border-0 px-3 text-xs font-medium text-slate-500 shadow-none data-[state=on]:bg-white data-[state=on]:text-slate-900 data-[state=on]:shadow-sm'
             >
               {item.label}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
-        <select
-          value={categoryId ?? ''}
-          onChange={(event) =>
-            onCategoryChange(
-              event.target.value ? Number(event.target.value) : undefined,
-            )
+        <Select
+          value={categoryId ? String(categoryId) : 'all'}
+          onValueChange={(value) =>
+            onCategoryChange(value === 'all' ? undefined : Number(value))
           }
-          className='h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600'
         >
-          <option value=''>すべてのカテゴリ</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            aria-label='カテゴリ'
+            className='h-8 w-[160px] bg-white text-xs text-slate-600'
+          >
+            <SelectValue placeholder='すべてのカテゴリ' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>すべてのカテゴリ</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={String(category.id)}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <select
-          value={authorId ?? ''}
-          onChange={(event) =>
-            onAuthorChange(
-              event.target.value ? Number(event.target.value) : undefined,
-            )
+        <Select
+          value={authorId ? String(authorId) : 'all'}
+          onValueChange={(value) =>
+            onAuthorChange(value === 'all' ? undefined : Number(value))
           }
-          className='h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600'
         >
-          <option value=''>すべての著者</option>
-          {authors.map((author) => (
-            <option key={author.id} value={author.id}>
-              {author.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            aria-label='著者'
+            className='h-8 w-[140px] bg-white text-xs text-slate-600'
+          >
+            <SelectValue placeholder='すべての著者' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>すべての著者</SelectItem>
+            {authors.map((author) => (
+              <SelectItem key={author.id} value={String(author.id)}>
+                {author.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

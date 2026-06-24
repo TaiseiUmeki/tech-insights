@@ -36,6 +36,7 @@ tasks:
   test:
     desc: テスト実行（Backend）
     cmds:
+      - task: db-upgrade-test
       - docker compose exec backend pytest -v
 
   test-all:
@@ -89,9 +90,26 @@ tasks:
       - docker compose run --rm migrator alembic revision --autogenerate -m "{{.CLI_ARGS}}"
 
   db-upgrade:
-    desc: マイグレーション適用
+    desc: マイグレーション適用（開発DB）
     cmds:
       - docker compose run --rm migrator alembic upgrade head
+
+  db-create-test:
+    desc: テストDB作成
+    cmds:
+      - docker compose run --rm --no-deps backend python scripts/ensure_test_database.py
+
+  db-upgrade-test:
+    desc: マイグレーション適用（テストDB）
+    cmds:
+      - task: db-create-test
+      - docker compose run --rm -e ALEMBIC_DATABASE_URL=postgresql+psycopg2://app_user:app_password@db:5432/ai_solution_test_db migrator alembic upgrade head
+
+  db-upgrade-all:
+    desc: マイグレーション適用（開発DB + テストDB）
+    cmds:
+      - task: db-upgrade
+      - task: db-upgrade-test
 
   # クリーンアップ
   clean:
