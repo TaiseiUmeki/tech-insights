@@ -2,7 +2,7 @@
 
 AI 搭載型ナレッジベース「TechInsight」です。技術記事データを PostgreSQL に取り込み、記事の CRUD、キーワード検索、セマンティック検索、ハイブリッド検索をローカル環境で再現できる Web アプリケーションとして実装しています。
 
-評価者が API キーを持っていない前提で、Docker Compose により Database、Backend API、Frontend をワンコマンドで起動できる構成です。
+このリポジトリはコーディング試験の提出物です。評価者が API キーを持っていない前提で、Docker Compose により Database、Backend API、Frontend をワンコマンドで起動できる構成にしています。
 
 ## 概要
 
@@ -33,23 +33,33 @@ AI 搭載型ナレッジベース「TechInsight」です。技術記事データ
 - Docker Compose
 - Taskfile を使う場合のみ `task`
 
-### 起動
+### 1. 環境変数
+
+通常は同梱の `backend/.env` で起動できます。必要に応じて `backend/.env.example` を参考にしてください。
+
+### 2. アプリケーション起動
 
 ```bash
 docker compose up
 ```
 
-または:
+または Taskfile を使う場合:
 
 ```bash
 task up
 ```
 
-`docker compose up` では PostgreSQL / pgvector 起動、Alembic migration、`docs/articles.csv` の初期インポート、Backend API 起動、Frontend 起動を行います。
+`docker compose up` では以下が実行されます。
+
+- PostgreSQL / pgvector コンテナ起動
+- Alembic migration 実行
+- `docs/articles.csv` の初期インポート
+- Backend API 起動
+- Frontend 起動
 
 初回起動時は Docker image build、Python / npm 依存関係の取得、embedding model の取得に時間がかかる場合があります。
 
-### アクセス先
+### 3. アクセス先
 
 | 用途 | URL |
 |---|---|
@@ -75,6 +85,17 @@ pgAdmin の初期ログイン:
 | semantic | 自然文の意味に近い記事を探す | pgvector cosine similarity |
 | hybrid | 用語一致と意味的類似の両方で探す | keyword と semantic の RRF 融合 |
 
+### 記事管理
+
+画面上から以下の操作ができます。
+
+- 記事詳細の確認
+- 新規記事の作成
+- 既存記事の編集
+- 記事の物理削除
+
+このアプリではユーザー認証・認可は実装対象外です。評価者がローカルで機能を確認しやすいように、同一ユーザーで閲覧・管理操作を行う前提にしています。
+
 ### モーダルURL
 
 画面設計に合わせ、モーダル状態はURLクエリで表現します。
@@ -89,6 +110,8 @@ pgAdmin の初期ログイン:
 
 ## API
 
+API は RESTful に構成しています。代表的なエンドポイントは以下です。
+
 | Method | Path | 用途 |
 |---|---|---|
 | GET | `/api/articles` | 記事一覧取得、検索 |
@@ -100,7 +123,7 @@ pgAdmin の初期ログイン:
 | GET | `/api/categories` | カテゴリ一覧取得 |
 | GET | `/api/authors` | 著者一覧取得 |
 
-API 仕様:
+API 仕様は以下でも確認できます。
 
 - Swagger UI: http://localhost:8000/docs
 - OpenAPI JSON: [backend/documents/api/openapi.json](./backend/documents/api/openapi.json)
@@ -112,6 +135,7 @@ API 仕様:
 
 - 一覧、検索、詳細、作成、編集、削除を `/articles` 中心で操作できる構成にしています。
 - 詳細、作成、編集、削除モーダルはURLクエリと同期します。
+- 検索モードは `keyword`、`semantic`、`hybrid` を明示的に切り替えられるようにしています。
 - 編集時の著者・カテゴリは既存マスタから選択します。
 - 検索結果 0 件、API エラー、読み込み中の状態を画面上で扱います。
 
@@ -128,8 +152,18 @@ API 仕様:
 - Backend は Onion Architecture に沿って、domain、application、infrastructure、presentation を分離しています。
 - Frontend は Feature-Sliced Design に沿って、shared、entities、features、widgets、page-components、app を分離しています。
 - API 仕様は FastAPI から OpenAPI として生成し、Frontend / Backend 間の契約を確認しやすくしています。
+- 設計書を `docs/requirements/` 配下に整理しています。
+
+### 保守運用・スケーラビリティ
+
+- Docker Compose でローカル再現性を確保しています。
+- DB schema は Alembic migration で管理します。
+- CSV 初期投入は起動時に実行され、既存データを重複投入しない設計です。
+- Backend / Frontend / showcase sync の検証コマンドを分け、変更範囲に応じて確認できます。
 
 ## 開発・検証コマンド
+
+プロジェクトルートで実行します。
 
 | コマンド | 内容 |
 |---|---|
@@ -145,18 +179,21 @@ API 仕様:
 | `task lint` | Backend の Ruff check を実行 |
 | `task onion-check` | Onion Architecture 依存関係チェック |
 
-CI 相当の確認:
+CI 相当の確認をローカルで行う場合:
 
 ```bash
+# Backend
 docker compose exec backend ruff check .
 docker compose exec backend ruff format --check .
 docker compose run --rm backend python scripts/check_onion_architecture.py
 docker compose exec backend pytest -v
 
+# Frontend
 docker compose exec frontend npm run type-check
 docker compose exec frontend npm test -- --ci
 docker compose exec -e NODE_ENV=production frontend npm run build
 
+# UI showcase
 bash frontend/scripts/check-showcase-sync.sh
 ```
 
@@ -165,6 +202,8 @@ Backend の pytest は `ai_solution_test_db` を使用します。テストDBは
 開発DB `ai_solution_db` に対して `Base.metadata.drop_all()` は実行しません。
 
 ## ドキュメント
+
+提出物に対応する主要ドキュメントです。
 
 | ドキュメント | 内容 |
 |---|---|
@@ -195,4 +234,5 @@ coding_test/
 ## 補足
 
 - 外部 API キーは不要です。
+- embedding model はローカルで動作するため、初回起動時にモデル取得が発生します。
 - ユーザー認証・認可、本番クラウドデプロイ、権限管理は今回の対象外です。
