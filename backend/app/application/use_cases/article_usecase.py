@@ -3,9 +3,6 @@ from app.application.schemas.article_schemas import (
     ArticleDetailDTO,
     ArticleInputDTO,
     ArticleListDTO,
-    AuthorDTO,
-    CategoryDTO,
-    ReindexJobDTO,
 )
 from app.domain.exceptions.business_exceptions import (
     BusinessLogicError,
@@ -14,8 +11,6 @@ from app.domain.exceptions.business_exceptions import (
 )
 from app.domain.repositories.article_repository import (
     IArticleRepository,
-    IAuthorRepository,
-    ICategoryRepository,
 )
 
 
@@ -25,13 +20,9 @@ class ArticleUsecase:
     def __init__(
         self,
         article_repository: IArticleRepository,
-        category_repository: ICategoryRepository,
-        author_repository: IAuthorRepository,
         embedding_service: IEmbeddingService,
     ):
         self.article_repository = article_repository
-        self.category_repository = category_repository
-        self.author_repository = author_repository
         self.embedding_service = embedding_service
 
     def list_articles(
@@ -130,18 +121,6 @@ class ArticleUsecase:
         if not self.article_repository.delete(article_id):
             raise ResourceNotFoundError(f'記事ID {article_id} が見つかりません')
 
-    def list_categories(self, q: str | None = None) -> list[CategoryDTO]:
-        return [
-            CategoryDTO(id=category.id, name=category.name)
-            for category in self.category_repository.list_categories(q)
-        ]
-
-    def list_authors(self, q: str | None = None) -> list[AuthorDTO]:
-        return [
-            AuthorDTO(id=author.id, name=author.name)
-            for author in self.author_repository.list_authors(q)
-        ]
-
     def related_articles(self, article_id: int, limit: int) -> ArticleListDTO:
         if limit < 1 or limit > 20:
             raise BusinessValidationError('limit が不正です')
@@ -152,35 +131,6 @@ class ArticleUsecase:
             raise BusinessLogicError('関連記事検索用のembeddingがありません')
         items = self.article_repository.find_related(article_id, article.embedding, limit)
         return ArticleListDTO(items=items, page=1, limit=limit, total=len(items))
-
-    def reindex(self, article_id: int | None = None) -> ReindexJobDTO:
-        if article_id is None:
-            raise BusinessLogicError(
-                '全件再生成はCSV再投入または管理スクリプトで行います'
-            )
-        article = self.article_repository.get_by_id(article_id)
-        if article is None:
-            raise ResourceNotFoundError(f'記事ID {article_id} が見つかりません')
-        detail = self.article_repository.get_detail_dict(article_id)
-        if detail is None:
-            raise ResourceNotFoundError(f'記事ID {article_id} が見つかりません')
-        embedding = self.embedding_service.embed_article(article.title, article.content)
-        self.article_repository.update(
-            article_id=article.id,
-            title=article.title,
-            content=article.content,
-            author_name=detail['author']['name'],
-            category_name=detail['category']['name'],
-            published_at=article.published_at,
-            embedding=embedding,
-        )
-        return ReindexJobDTO(
-            id=f'article_{article_id}',
-            status='completed',
-            target_count=1,
-            processed_count=1,
-            failed_count=0,
-        )
 
     def _validate_page(self, page: int, limit: int) -> None:
         if page < 1:

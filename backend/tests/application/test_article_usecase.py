@@ -13,8 +13,6 @@ def _usecase() -> tuple[ArticleUsecase, MagicMock, MagicMock]:
     embedding_service = MagicMock()
     usecase = ArticleUsecase(
         article_repository=article_repository,
-        category_repository=MagicMock(),
-        author_repository=MagicMock(),
         embedding_service=embedding_service,
     )
     return usecase, article_repository, embedding_service

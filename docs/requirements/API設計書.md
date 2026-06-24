@@ -391,32 +391,16 @@
 }
 ```
 
-`articleId` を省略した場合は全記事を対象にする。
+`articleId` は必須とし、指定記事のみを対象にする。全件再生成はCSV再投入または管理スクリプトで扱う。
 
 - **レスポンス**:
 
 ```json
 {
-  "id": "job_20260625_0001",
-  "status": "queued",
+  "id": "article_1",
+  "status": "completed",
   "targetCount": 1,
-  "processedCount": 0,
-  "failedCount": 0
-}
-```
-
-### GET /api/reindex-jobs/{jobId}
-
-- **説明**: 再インデックスジョブの状態を取得する。追加実装扱いとする。
-- **クエリパラメータ**: なし
-- **レスポンス**:
-
-```json
-{
-  "id": "job_20260625_0001",
-  "status": "running",
-  "targetCount": 1000,
-  "processedCount": 240,
+  "processedCount": 1,
   "failedCount": 0
 }
 ```

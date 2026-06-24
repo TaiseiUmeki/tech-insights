@@ -7,19 +7,10 @@ from app.presentation.schemas.article_schemas import (
     ArticleDetailResponse,
     ArticleListResponse,
     ArticleUpsertRequest,
-    AuthorListResponse,
-    AuthorResponse,
-    CategoryListResponse,
-    CategoryResponse,
     DeleteArticleResponse,
-    ReindexJobRequest,
-    ReindexJobResponse,
 )
 
 article_router = APIRouter(prefix='/api/articles', tags=['記事'])
-category_router = APIRouter(prefix='/api/categories', tags=['カテゴリ'])
-author_router = APIRouter(prefix='/api/authors', tags=['著者'])
-reindex_router = APIRouter(prefix='/api/reindex-jobs', tags=['検索管理'])
 
 
 @article_router.get('', response_model=ArticleListResponse)
@@ -109,31 +100,3 @@ def related_articles(
     usecase: ArticleUsecase = Depends(get_article_usecase),
 ) -> ArticleListResponse:
     return ArticleListResponse.from_dto(usecase.related_articles(article_id, limit))
-
-
-@category_router.get('', response_model=CategoryListResponse)
-def list_categories(
-    q: str | None = Query(None),
-    usecase: ArticleUsecase = Depends(get_article_usecase),
-) -> CategoryListResponse:
-    return CategoryListResponse(
-        items=[CategoryResponse.from_dto(item) for item in usecase.list_categories(q)]
-    )
-
-
-@author_router.get('', response_model=AuthorListResponse)
-def list_authors(
-    q: str | None = Query(None),
-    usecase: ArticleUsecase = Depends(get_article_usecase),
-) -> AuthorListResponse:
-    return AuthorListResponse(
-        items=[AuthorResponse.from_dto(item) for item in usecase.list_authors(q)]
-    )
-
-
-@reindex_router.post('', response_model=ReindexJobResponse, status_code=201)
-def create_reindex_job(
-    request: ReindexJobRequest,
-    usecase: ArticleUsecase = Depends(get_article_usecase),
-) -> ReindexJobResponse:
-    return ReindexJobResponse.from_dto(usecase.reindex(request.article_id))

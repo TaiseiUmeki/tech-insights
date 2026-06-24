@@ -10,12 +10,10 @@ from app.infrastructure.csv.article_csv_importer import ArticleCsvImporter
 from app.infrastructure.db.session import SessionLocal
 from app.infrastructure.embedding.local_embedding_service import LocalEmbeddingService
 from app.infrastructure.logging.logging import setup_logging
-from app.presentation.api.article_api import (
-    article_router,
-    author_router,
-    category_router,
-    reindex_router,
-)
+from app.presentation.api.article_api import article_router
+from app.presentation.api.author_api import author_router
+from app.presentation.api.category_api import category_router
+from app.presentation.api.reindex_job_api import reindex_router
 from app.presentation.handlers import register_exception_handlers
 
 # ロギングの設定を初期化
