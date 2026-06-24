@@ -28,33 +28,3 @@ export function generateMetadata(): Metadata {
     robots: 'index, follow',
   };
 }
-
-/**
- * 公開ページ用のメタデータを生成（アイコン付き）
- */
-export function generatePublicMetadata(): Metadata {
-  const baseMetadata = generateMetadata();
-
-  return {
-    ...baseMetadata,
-    icons: {
-      icon: '/favicon.ico',
-      apple: '/apple-icon.png',
-    },
-  };
-}
-
-/**
- * 認証済みユーザー用のメタデータを生成（アイコン付き）
- */
-export function generateAuthenticatedMetadata(): Metadata {
-  const baseMetadata = generateMetadata();
-
-  return {
-    ...baseMetadata,
-    icons: {
-      icon: '/favicon.ico',
-      apple: '/apple-icon.png',
-    },
-  };
-}

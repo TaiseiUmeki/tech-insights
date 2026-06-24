@@ -102,11 +102,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Generate RSA keys for JWT
-        run: |
-          openssl genrsa -out private_key.pem 2048
-          openssl rsa -in private_key.pem -pubout -out public_key.pem
-
       - name: Run Domain Tests
         env:
           POSTGRES_HOST: localhost
@@ -116,13 +111,7 @@ jobs:
           POSTGRES_PORT: 5432
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           STAGE: test
-          ENABLE_AUTH: "false"
-          JWT_EXPIRATION_HOURS: "24"
-          JWT_ALGORITHM: RS256
-        run: |
-          export JWT_PRIVATE_KEY=$(cat private_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          export JWT_PUBLIC_KEY=$(cat public_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          pytest tests/domain -v
+        run: pytest tests/domain -v
 
       - name: Run Application Tests
         env:
@@ -133,13 +122,7 @@ jobs:
           POSTGRES_PORT: 5432
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           STAGE: test
-          ENABLE_AUTH: "false"
-          JWT_EXPIRATION_HOURS: "24"
-          JWT_ALGORITHM: RS256
-        run: |
-          export JWT_PRIVATE_KEY=$(cat private_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          export JWT_PUBLIC_KEY=$(cat public_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          pytest tests/application -v
+        run: pytest tests/application -v
 
       - name: Run Integration Tests
         env:
@@ -150,13 +133,7 @@ jobs:
           POSTGRES_PORT: 5432
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           STAGE: test
-          ENABLE_AUTH: "false"
-          JWT_EXPIRATION_HOURS: "24"
-          JWT_ALGORITHM: RS256
-        run: |
-          export JWT_PRIVATE_KEY=$(cat private_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          export JWT_PUBLIC_KEY=$(cat public_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          pytest tests/infrastructure tests/presentation -v
+        run: pytest tests/infrastructure tests/presentation -v
 
       - name: Generate Coverage Report
         env:
@@ -167,13 +144,7 @@ jobs:
           POSTGRES_PORT: 5432
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           STAGE: test
-          ENABLE_AUTH: "false"
-          JWT_EXPIRATION_HOURS: "24"
-          JWT_ALGORITHM: RS256
-        run: |
-          export JWT_PRIVATE_KEY=$(cat private_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          export JWT_PUBLIC_KEY=$(cat public_key.pem | sed ':a;N;$!ba;s/\n/\\n/g')
-          pytest --cov=app --cov-report=term-missing --cov-report=xml
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -223,11 +194,6 @@ jobs:
           # Database URL for SQLAlchemy (dummy)
           DATABASE_URL=postgresql+psycopg2://test_user:test_password@localhost:5432/test_db
 
-          # JWT Settings (dummy keys for build check)
-          JWT_ALGORITHM=RS256
-          JWT_EXPIRATION_HOURS=24
-          JWT_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCmznlFnpBUsejj\ns4tmb5EK5+HgWVxIFjf9PBOVzmabvCyCirgdf2s0aQW+/sBeLdrrKrrpm7gjFB1y\nw7A+myLtYt28HVfEN/5MCCktMyU55eDW5psmdk3AAku45F5QReGqfpgC/q7hVBNy\nrUTC1wYEpFFtAAVZpN3X/JjWt7DQ8EoC3EYpu0Bj1uEjaG+Qb1Ijt2+3fdt5h6OI\n1FlefGrenCds5okYclDLIcWXC8klA4B+B9S3vZF1ktPq+DYMNxBEkPQurapZZkM+\nRsEr9oIl8nE9jPkv3XLhhj+7LUCVEmhcHcLShfVWAmZSIZbPx3n6YaiiR47HjDV/\nfpCXBqZRAgMBAAECggEABg2Ivscc1Wfxy55ypORQQvEsY/3WIIsG29Zz3vwjAsxy\noIeMXAypPRkBA3/exuQa1S0DJJI5HbO/iFAzy2fJfgv4ABkf+8+s14E1zk00cPwH\nm0C5uUzycBDdQs+toPPSNyO6HCS1/5jzjjYdoETZc+5rAn2tVAYMo0doG+WFQeWh\nNlevGs4Sa/f+NJiuRCUoGROJTD69OHiJSXusxI+T979Plj/RYtWt51gk7nmGti2U\n4b8XcrSCGpi/50YXCD8F9FnuOxg8IeNaQmZjt4aFuadYJfzMCa9MttkcgVnCZcm6\nobmlWvQc6wApD4+ZqUpx7QDL4cNMmG4e4ZHQAeR/AQKBgQDjz2cijyUldzer+9ay\nZcuEFQrOId3D7w+UisBRN+NpvZxzR8zzD0fuSmk7GcZMuR6P22QI5dce9q+tUbSZ\nJAwvw4nf8gqM8BRPIGNJK/T01TjQjc6c/Xno2YB4Qb6OnWI1rrKA/ZcWSelgAPPf\nzgWI/66ssQELCigYI8z7RCBI0QKBgQC7cpc6j5nH+i5mn2FP7DnTjJgqLDh/gY91\nKWI5dHvo1S9NR+u6G7pPqXJrSRtt8p/WSybj6iAqw5UXtr8zNuEFvJwRecV4cPpr\nhluy5H1ftSBKi8SnogzyhyxmcoclF39+9tvVrOQ6XFqu6P+eIAI17u2cW7g7njQq\nGA55n2/lgQKBgB99VNFHHiheoVhpmFTSk14vlm3F6qShz/KFd24CnrHIHu8kdqUG\ncLf0mzUrK+kBEcNq3RoJw0GpccEwcRlWDUUw70cAawruSLBjVrYPmG2bZ54UbAHx\nW7+fCQ4WcGPAR4oKGuyPoSnYj6TQnOVL0iIMzbVbRjyja8VidXwp/5hxAoGAJHtJ\n6ZDXOi975mcwllCAdKbRWqvelxpNJF1Yi5wbHZaYLS9JNqB841I0PaMt3nkxGJDp\n0cPYXNpR4xqjHcGZi/dIXLJZd3Ztlo3AvRFxQTZMQZXwQTvtzyn1vz6dBOAM5VYA\nNRcAGEevMomQbmMGax7ESgEj2x6QQn0KHCumqIECgYEAuxTLShtPqpgtCdDRDwua\nSBFtMpXlfe4w24vw7FdDbIo+a8YydfLTKaUvEOyhmWBp1moYLQe2KZqGwq5gNMMN\nwgCl613TTJYsM5wRB6V2Sd0dJ01Yx7/Dui3u2KyGSlNMc2KeynG+m91iTWR/rZH4\nC038BTsG68E0uA9SRyEvK0I=\n-----END PRIVATE KEY-----\n
-          JWT_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAps55RZ6QVLHo47OLZm+R\nCufh4FlcSBY3/TwTlc5mm7wsgoq4HX9rNGkFvv7AXi3a6yq66Zu4IxQdcsOwPpsi\n7WLdvB1XxDf+TAgpLTMlOeXg1uabJnZNwAJLuOReUEXhqn6YAv6u4VQTcq1EwtcG\nBKRRbQAFWaTd1/yY1rew0PBKAtxGKbtAY9bhI2hvkG9SI7dvt33beYejiNRZXnxq\n3pwnbOaJGHJQyyHFlwvJJQOAfgfUt72RdZLT6vg2DDcQRJD0Lq2qWWZDPkbBK/aC\nJfJxPYz5L91y4YY/uy1AlRJoXB3C0oX1VgJmUiGWz8d5+mGookeOx4w1f36Qlwam\nUQIDAQAB\n-----END PUBLIC KEY-----\n
           EOF
 
           container_name="backend-startup-check"

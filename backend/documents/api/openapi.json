@@ -5,41 +5,116 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/api/auth/login": {
-      "post": {
+    "/api/articles": {
+      "get": {
         "tags": [
-          "\u8a8d\u8a3c"
+          "\u8a18\u4e8b"
         ],
-        "summary": "Login",
-        "operationId": "login_api_auth_login_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "login_id": {
-                    "type": "string",
-                    "title": "Login Id",
-                    "description": "\u30ed\u30b0\u30a4\u30f3ID"
-                  },
-                  "password": {
-                    "type": "string",
-                    "title": "Password",
-                    "description": "\u30d1\u30b9\u30ef\u30fc\u30c9"
-                  }
-                },
-                "type": "object",
-                "required": [
-                  "login_id",
-                  "password"
-                ],
-                "title": "LoginRequest",
-                "description": "\u30ed\u30b0\u30a4\u30f3\u30ea\u30af\u30a8\u30b9\u30c8"
-              }
+        "summary": "List Articles",
+        "operationId": "list_articles_api_articles_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
             }
           },
-          "required": true
-        },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 12,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "searchMode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "keyword",
+              "title": "Searchmode"
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Categoryid"
+            }
+          },
+          {
+            "name": "authorId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorid"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "publishedAt",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "desc",
+              "title": "Order"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -47,30 +122,306 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "message": {
-                      "type": "string",
-                      "title": "Message",
-                      "description": "\u30e1\u30c3\u30bb\u30fc\u30b8"
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "title": "Id"
+                          },
+                          "sourceArticleId": {
+                            "anyOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "title": "Sourcearticleid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "title": "Title"
+                          },
+                          "snippet": {
+                            "type": "string",
+                            "title": "Snippet"
+                          },
+                          "category": {
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "title": "Id"
+                              },
+                              "name": {
+                                "type": "string",
+                                "title": "Name"
+                              }
+                            },
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "title": "CategoryResponse"
+                          },
+                          "author": {
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "title": "Id"
+                              },
+                              "name": {
+                                "type": "string",
+                                "title": "Name"
+                              }
+                            },
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "title": "AuthorResponse"
+                          },
+                          "publishedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "title": "Publishedat"
+                          },
+                          "score": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "title": "Score"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "snippet",
+                          "category",
+                          "author",
+                          "publishedAt"
+                        ],
+                        "title": "ArticleListItemResponse"
+                      },
+                      "type": "array",
+                      "title": "Items"
                     },
-                    "access_token": {
-                      "type": "string",
-                      "title": "Access Token",
-                      "description": "\u30a2\u30af\u30bb\u30b9\u30c8\u30fc\u30af\u30f3"
-                    },
-                    "user_id": {
+                    "page": {
                       "type": "integer",
-                      "title": "User Id",
-                      "description": "\u30e6\u30fc\u30b6\u30fcID"
+                      "title": "Page"
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "title": "Limit"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "title": "Total"
                     }
                   },
                   "type": "object",
                   "required": [
-                    "message",
-                    "access_token",
-                    "user_id"
+                    "items",
+                    "page",
+                    "limit",
+                    "total"
                   ],
-                  "title": "LoginResponse",
-                  "description": "\u30ed\u30b0\u30a4\u30f3\u30ec\u30b9\u30dd\u30f3\u30b9"
+                  "title": "ArticleListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "\u8a18\u4e8b"
+        ],
+        "summary": "Create Article",
+        "operationId": "create_article_api_articles_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "title": "Title"
+                  },
+                  "content": {
+                    "type": "string",
+                    "title": "Content"
+                  },
+                  "authorName": {
+                    "type": "string",
+                    "title": "Authorname"
+                  },
+                  "categoryName": {
+                    "type": "string",
+                    "title": "Categoryname"
+                  },
+                  "publishedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "title": "Publishedat"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "title",
+                  "content",
+                  "authorName",
+                  "categoryName",
+                  "publishedAt"
+                ],
+                "title": "ArticleUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "title": "Id"
+                    },
+                    "sourceArticleId": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Sourcearticleid"
+                    },
+                    "title": {
+                      "type": "string",
+                      "title": "Title"
+                    },
+                    "content": {
+                      "type": "string",
+                      "title": "Content"
+                    },
+                    "category": {
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "title": "Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "title": "Name"
+                        }
+                      },
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "title": "CategoryResponse"
+                    },
+                    "author": {
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "title": "Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "title": "Name"
+                        }
+                      },
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "title": "AuthorResponse"
+                    },
+                    "publishedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "title": "Publishedat"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "title",
+                    "content",
+                    "category",
+                    "author",
+                    "publishedAt"
+                  ],
+                  "title": "ArticleDetailResponse"
                 }
               }
             }
@@ -128,14 +479,24 @@
         }
       }
     },
-    "/api/auth/logout": {
-      "post": {
+    "/api/articles/{article_id}": {
+      "get": {
         "tags": [
-          "\u8a8d\u8a3c"
+          "\u8a18\u4e8b"
         ],
-        "summary": "Logout",
-        "description": "\u30ed\u30b0\u30a2\u30a6\u30c8\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8",
-        "operationId": "logout_api_auth_logout_post",
+        "summary": "Get Article",
+        "operationId": "get_article_api_articles__article_id__get",
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Article Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -143,18 +504,423 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "message": {
+                    "id": {
+                      "type": "integer",
+                      "title": "Id"
+                    },
+                    "sourceArticleId": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Sourcearticleid"
+                    },
+                    "title": {
                       "type": "string",
-                      "title": "Message",
-                      "description": "\u30e1\u30c3\u30bb\u30fc\u30b8"
+                      "title": "Title"
+                    },
+                    "content": {
+                      "type": "string",
+                      "title": "Content"
+                    },
+                    "category": {
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "title": "Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "title": "Name"
+                        }
+                      },
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "title": "CategoryResponse"
+                    },
+                    "author": {
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "title": "Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "title": "Name"
+                        }
+                      },
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "title": "AuthorResponse"
+                    },
+                    "publishedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "title": "Publishedat"
                     }
                   },
                   "type": "object",
                   "required": [
-                    "message"
+                    "id",
+                    "title",
+                    "content",
+                    "category",
+                    "author",
+                    "publishedAt"
                   ],
-                  "title": "LogoutResponse",
-                  "description": "\u30ed\u30b0\u30a2\u30a6\u30c8\u30ec\u30b9\u30dd\u30f3\u30b9"
+                  "title": "ArticleDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "\u8a18\u4e8b"
+        ],
+        "summary": "Update Article",
+        "operationId": "update_article_api_articles__article_id__put",
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Article Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "title": "Title"
+                  },
+                  "content": {
+                    "type": "string",
+                    "title": "Content"
+                  },
+                  "authorName": {
+                    "type": "string",
+                    "title": "Authorname"
+                  },
+                  "categoryName": {
+                    "type": "string",
+                    "title": "Categoryname"
+                  },
+                  "publishedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "title": "Publishedat"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "title",
+                  "content",
+                  "authorName",
+                  "categoryName",
+                  "publishedAt"
+                ],
+                "title": "ArticleUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "title": "Id"
+                    },
+                    "sourceArticleId": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Sourcearticleid"
+                    },
+                    "title": {
+                      "type": "string",
+                      "title": "Title"
+                    },
+                    "content": {
+                      "type": "string",
+                      "title": "Content"
+                    },
+                    "category": {
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "title": "Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "title": "Name"
+                        }
+                      },
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "title": "CategoryResponse"
+                    },
+                    "author": {
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "title": "Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "title": "Name"
+                        }
+                      },
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "title": "AuthorResponse"
+                    },
+                    "publishedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "title": "Publishedat"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "title",
+                    "content",
+                    "category",
+                    "author",
+                    "publishedAt"
+                  ],
+                  "title": "ArticleDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "\u8a18\u4e8b"
+        ],
+        "summary": "Delete Article",
+        "operationId": "delete_article_api_articles__article_id__delete",
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Article Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "title": "Id"
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "title": "Deleted"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "deleted"
+                  ],
+                  "title": "DeleteArticleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
                 }
               }
             }
@@ -162,14 +928,36 @@
         }
       }
     },
-    "/api/auth/status": {
+    "/api/articles/{article_id}/related-articles": {
       "get": {
         "tags": [
-          "\u8a8d\u8a3c"
+          "\u8a18\u4e8b"
         ],
-        "summary": "Get Status",
-        "description": "\u8a8d\u8a3c\u72b6\u614b\u53d6\u5f97\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8",
-        "operationId": "get_status_api_auth_status_get",
+        "summary": "Related Articles",
+        "operationId": "related_articles_api_articles__article_id__related_articles_get",
+        "parameters": [
+          {
+            "name": "article_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Article Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 3,
+              "title": "Limit"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -177,25 +965,547 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "is_authenticated": {
-                      "type": "boolean",
-                      "title": "Is Authenticated",
-                      "description": "\u8a8d\u8a3c\u6e08\u307f\u304b\u3069\u3046\u304b"
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "title": "Id"
+                          },
+                          "sourceArticleId": {
+                            "anyOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "title": "Sourcearticleid"
+                          },
+                          "title": {
+                            "type": "string",
+                            "title": "Title"
+                          },
+                          "snippet": {
+                            "type": "string",
+                            "title": "Snippet"
+                          },
+                          "category": {
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "title": "Id"
+                              },
+                              "name": {
+                                "type": "string",
+                                "title": "Name"
+                              }
+                            },
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "title": "CategoryResponse"
+                          },
+                          "author": {
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "title": "Id"
+                              },
+                              "name": {
+                                "type": "string",
+                                "title": "Name"
+                              }
+                            },
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "title": "AuthorResponse"
+                          },
+                          "publishedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "title": "Publishedat"
+                          },
+                          "score": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "title": "Score"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "snippet",
+                          "category",
+                          "author",
+                          "publishedAt"
+                        ],
+                        "title": "ArticleListItemResponse"
+                      },
+                      "type": "array",
+                      "title": "Items"
                     },
-                    "user_id": {
+                    "page": {
                       "type": "integer",
-                      "title": "User Id",
-                      "description": "\u30e6\u30fc\u30b6\u30fcID"
+                      "title": "Page"
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "title": "Limit"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "title": "Total"
                     }
                   },
                   "type": "object",
                   "required": [
-                    "is_authenticated",
-                    "user_id"
+                    "items",
+                    "page",
+                    "limit",
+                    "total"
                   ],
-                  "title": "StatusResponse",
-                  "description": "\u8a8d\u8a3c\u72b6\u614b\u30ec\u30b9\u30dd\u30f3\u30b9"
+                  "title": "ArticleListResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/authors": {
+      "get": {
+        "tags": [
+          "\u8457\u8005"
+        ],
+        "summary": "List Authors",
+        "operationId": "list_authors_api_authors_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "title": "Id"
+                          },
+                          "name": {
+                            "type": "string",
+                            "title": "Name"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "name"
+                        ],
+                        "title": "AuthorResponse"
+                      },
+                      "type": "array",
+                      "title": "Items"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "items"
+                  ],
+                  "title": "AuthorListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": [
+          "\u30ab\u30c6\u30b4\u30ea"
+        ],
+        "summary": "List Categories",
+        "operationId": "list_categories_api_categories_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "title": "Id"
+                          },
+                          "name": {
+                            "type": "string",
+                            "title": "Name"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "name"
+                        ],
+                        "title": "CategoryResponse"
+                      },
+                      "type": "array",
+                      "title": "Items"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "items"
+                  ],
+                  "title": "CategoryListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reindex-jobs": {
+      "post": {
+        "tags": [
+          "\u691c\u7d22\u7ba1\u7406"
+        ],
+        "summary": "Create Reindex Job",
+        "operationId": "create_reindex_job_api_reindex_jobs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "articleId": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Articleid"
+                  }
+                },
+                "type": "object",
+                "title": "ReindexJobRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "title": "Id"
+                    },
+                    "status": {
+                      "type": "string",
+                      "title": "Status"
+                    },
+                    "targetCount": {
+                      "type": "integer",
+                      "title": "Targetcount"
+                    },
+                    "processedCount": {
+                      "type": "integer",
+                      "title": "Processedcount"
+                    },
+                    "failedCount": {
+                      "type": "integer",
+                      "title": "Failedcount"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "targetCount",
+                    "processedCount",
+                    "failedCount"
+                  ],
+                  "title": "ReindexJobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "items": {
+                        "properties": {
+                          "loc": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "integer"
+                                }
+                              ]
+                            },
+                            "type": "array",
+                            "title": "Location"
+                          },
+                          "msg": {
+                            "type": "string",
+                            "title": "Message"
+                          },
+                          "type": {
+                            "type": "string",
+                            "title": "Error Type"
+                          }
+                        },
+                        "type": "object",
+                        "required": [
+                          "loc",
+                          "msg",
+                          "type"
+                        ],
+                        "title": "ValidationError"
+                      },
+                      "type": "array",
+                      "title": "Detail"
+                    }
+                  },
+                  "type": "object",
+                  "title": "HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "\u30d8\u30eb\u30b9\u30c1\u30a7\u30c3\u30af\u7528\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -205,6 +1515,441 @@
   },
   "components": {
     "schemas": {
+      "ArticleDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "sourceArticleId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcearticleid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "category": {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "title": "Id"
+              },
+              "name": {
+                "type": "string",
+                "title": "Name"
+              }
+            },
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "CategoryResponse"
+          },
+          "author": {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "title": "Id"
+              },
+              "name": {
+                "type": "string",
+                "title": "Name"
+              }
+            },
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "AuthorResponse"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Publishedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "content",
+          "category",
+          "author",
+          "publishedAt"
+        ],
+        "title": "ArticleDetailResponse"
+      },
+      "ArticleListItemResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "sourceArticleId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcearticleid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "category": {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "title": "Id"
+              },
+              "name": {
+                "type": "string",
+                "title": "Name"
+              }
+            },
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "CategoryResponse"
+          },
+          "author": {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "title": "Id"
+              },
+              "name": {
+                "type": "string",
+                "title": "Name"
+              }
+            },
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "AuthorResponse"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Publishedat"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "snippet",
+          "category",
+          "author",
+          "publishedAt"
+        ],
+        "title": "ArticleListItemResponse"
+      },
+      "ArticleListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "title": "Id"
+                },
+                "sourceArticleId": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Sourcearticleid"
+                },
+                "title": {
+                  "type": "string",
+                  "title": "Title"
+                },
+                "snippet": {
+                  "type": "string",
+                  "title": "Snippet"
+                },
+                "category": {
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "title": "Id"
+                    },
+                    "name": {
+                      "type": "string",
+                      "title": "Name"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "title": "CategoryResponse"
+                },
+                "author": {
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "title": "Id"
+                    },
+                    "name": {
+                      "type": "string",
+                      "title": "Name"
+                    }
+                  },
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "title": "AuthorResponse"
+                },
+                "publishedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Publishedat"
+                },
+                "score": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Score"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id",
+                "title",
+                "snippet",
+                "category",
+                "author",
+                "publishedAt"
+              ],
+              "title": "ArticleListItemResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "limit",
+          "total"
+        ],
+        "title": "ArticleListResponse"
+      },
+      "ArticleUpsertRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "authorName": {
+            "type": "string",
+            "title": "Authorname"
+          },
+          "categoryName": {
+            "type": "string",
+            "title": "Categoryname"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Publishedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "content",
+          "authorName",
+          "categoryName",
+          "publishedAt"
+        ],
+        "title": "ArticleUpsertRequest"
+      },
+      "AuthorListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "title": "Id"
+                },
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id",
+                "name"
+              ],
+              "title": "AuthorResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "AuthorListResponse"
+      },
+      "AuthorResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "AuthorResponse"
+      },
+      "CategoryListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "title": "Id"
+                },
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                }
+              },
+              "type": "object",
+              "required": [
+                "id",
+                "name"
+              ],
+              "title": "CategoryResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "CategoryListResponse"
+      },
+      "CategoryResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "CategoryResponse"
+      },
+      "DeleteArticleResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "deleted": {
+            "type": "boolean",
+            "title": "Deleted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "deleted"
+        ],
+        "title": "DeleteArticleResponse"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -248,89 +1993,55 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "LoginRequest": {
+      "ReindexJobRequest": {
         "properties": {
-          "login_id": {
-            "type": "string",
-            "title": "Login Id",
-            "description": "\u30ed\u30b0\u30a4\u30f3ID"
-          },
-          "password": {
-            "type": "string",
-            "title": "Password",
-            "description": "\u30d1\u30b9\u30ef\u30fc\u30c9"
+          "articleId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Articleid"
           }
         },
         "type": "object",
-        "required": [
-          "login_id",
-          "password"
-        ],
-        "title": "LoginRequest",
-        "description": "\u30ed\u30b0\u30a4\u30f3\u30ea\u30af\u30a8\u30b9\u30c8"
+        "title": "ReindexJobRequest"
       },
-      "LoginResponse": {
+      "ReindexJobResponse": {
         "properties": {
-          "message": {
+          "id": {
             "type": "string",
-            "title": "Message",
-            "description": "\u30e1\u30c3\u30bb\u30fc\u30b8"
+            "title": "Id"
           },
-          "access_token": {
+          "status": {
             "type": "string",
-            "title": "Access Token",
-            "description": "\u30a2\u30af\u30bb\u30b9\u30c8\u30fc\u30af\u30f3"
+            "title": "Status"
           },
-          "user_id": {
+          "targetCount": {
             "type": "integer",
-            "title": "User Id",
-            "description": "\u30e6\u30fc\u30b6\u30fcID"
-          }
-        },
-        "type": "object",
-        "required": [
-          "message",
-          "access_token",
-          "user_id"
-        ],
-        "title": "LoginResponse",
-        "description": "\u30ed\u30b0\u30a4\u30f3\u30ec\u30b9\u30dd\u30f3\u30b9"
-      },
-      "LogoutResponse": {
-        "properties": {
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "description": "\u30e1\u30c3\u30bb\u30fc\u30b8"
-          }
-        },
-        "type": "object",
-        "required": [
-          "message"
-        ],
-        "title": "LogoutResponse",
-        "description": "\u30ed\u30b0\u30a2\u30a6\u30c8\u30ec\u30b9\u30dd\u30f3\u30b9"
-      },
-      "StatusResponse": {
-        "properties": {
-          "is_authenticated": {
-            "type": "boolean",
-            "title": "Is Authenticated",
-            "description": "\u8a8d\u8a3c\u6e08\u307f\u304b\u3069\u3046\u304b"
+            "title": "Targetcount"
           },
-          "user_id": {
+          "processedCount": {
             "type": "integer",
-            "title": "User Id",
-            "description": "\u30e6\u30fc\u30b6\u30fcID"
+            "title": "Processedcount"
+          },
+          "failedCount": {
+            "type": "integer",
+            "title": "Failedcount"
           }
         },
         "type": "object",
         "required": [
-          "is_authenticated",
-          "user_id"
+          "id",
+          "status",
+          "targetCount",
+          "processedCount",
+          "failedCount"
         ],
-        "title": "StatusResponse",
-        "description": "\u8a8d\u8a3c\u72b6\u614b\u30ec\u30b9\u30dd\u30f3\u30b9"
+        "title": "ReindexJobResponse"
       },
       "ValidationError": {
         "properties": {

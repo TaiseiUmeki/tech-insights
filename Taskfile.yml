@@ -93,12 +93,6 @@ tasks:
     cmds:
       - docker compose run --rm migrator alembic upgrade head
 
-  # セキュリティ
-  generate-rsa-keys:
-    desc: JWT用RSA鍵ペア生成
-    cmds:
-      - docker compose exec backend python scripts/generate_rsa_keys.py
-
   # クリーンアップ
   clean:
     desc: キャッシュ・一時ファイル削除
