@@ -10,48 +10,39 @@ name: Deploy (Auto)
 # 3. バックエンドデプロイ (ECS)
 # 4. DBマイグレーション (Alembic)
 
-# on:
-#   push:
-#     branches:
-#       - develop  # Staging環境へ自動デプロイ
-#       - main     # Production環境へ自動デプロイ
-#     paths:
-#       - 'infra/**'
-#       - 'backend/**'
-#       - '.github/workflows/deploy-auto.yml'
-#
-#   workflow_dispatch:  # 手動実行も可能
-#     inputs:
-#       environment:
-#         description: 'デプロイ先環境'
-#         required: true
-#         type: choice
-#         options:
-#           - stg
-#           - prod
-#       deploy_target:
-#         description: 'デプロイ対象'
-#         required: false
-#         default: 'all'
-#         type: choice
-#         options:
-#           - all
-#           - infra-only
-#           - backend-only
-#       stack:
-#         description: 'インフラスタック (all/foundation/data/security/backend/frontend/integration/observability)'
-#         required: false
-#         default: 'all'
-#         type: choice
-#         options:
-#           - all
-#           - foundation
-#           - data
-#           - security
-#           - backend
-#           - frontend
-#           - integration
-#           - observability
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'デプロイ先環境'
+        required: true
+        type: choice
+        options:
+          - stg
+          - prod
+      deploy_target:
+        description: 'デプロイ対象'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - infra-only
+          - backend-only
+      stack:
+        description: 'インフラスタック (all/foundation/data/security/backend/frontend/integration/observability)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - foundation
+          - data
+          - security
+          - backend
+          - frontend
+          - integration
+          - observability
 
 # 同時実行制御: 同じ環境への同時デプロイを防止
 concurrency:
