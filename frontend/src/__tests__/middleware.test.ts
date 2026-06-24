@@ -86,7 +86,7 @@ describe('middleware', () => {
     });
 
     describe('認証ページ（/login）', () => {
-      it('認証済みでアクセス → /dashboard へリダイレクト', async () => {
+      it('認証済みでアクセス → / へリダイレクト', async () => {
         mockFetch.mockResolvedValueOnce({ ok: true });
 
         const { middleware } = await import('../middleware');
@@ -96,7 +96,7 @@ describe('middleware', () => {
 
         const response = await middleware(request);
 
-        expect(response.headers.get('location')).toContain('/dashboard');
+        expect(response.headers.get('location')).toBe('http://localhost:3000/');
       });
 
       it('未認証でアクセス → そのまま表示', async () => {
@@ -110,7 +110,7 @@ describe('middleware', () => {
     });
 
     describe('ルートパス（/）', () => {
-      it('認証済みでアクセス → /dashboard へリダイレクト', async () => {
+      it('認証済みでアクセス → そのまま表示', async () => {
         mockFetch.mockResolvedValueOnce({ ok: true });
 
         const { middleware } = await import('../middleware');
@@ -120,7 +120,7 @@ describe('middleware', () => {
 
         const response = await middleware(request);
 
-        expect(response.headers.get('location')).toContain('/dashboard');
+        expect(response.headers.get('location')).toBeNull();
       });
 
       it('未認証でアクセス → /login へリダイレクト', async () => {
@@ -139,22 +139,22 @@ describe('middleware', () => {
       process.env.NEXT_PUBLIC_ENABLE_AUTH = 'false';
     });
 
-    it('/ へアクセス → /dashboard へリダイレクト', async () => {
+    it('/ へアクセス → そのまま表示', async () => {
       const { middleware } = await import('../middleware');
       const request = createRequest('/');
 
       const response = await middleware(request);
 
-      expect(response.headers.get('location')).toContain('/dashboard');
+      expect(response.headers.get('location')).toBeNull();
     });
 
-    it('/login へアクセス → /dashboard へリダイレクト', async () => {
+    it('/login へアクセス → / へリダイレクト', async () => {
       const { middleware } = await import('../middleware');
       const request = createRequest('/login');
 
       const response = await middleware(request);
 
-      expect(response.headers.get('location')).toContain('/dashboard');
+      expect(response.headers.get('location')).toBe('http://localhost:3000/');
     });
 
     it('/dashboard へアクセス → そのまま表示', async () => {

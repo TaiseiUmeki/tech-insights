@@ -21,13 +21,9 @@ export async function middleware(request: NextRequest) {
 
   // 認証が無効の場合
   if (!ENABLE_AUTH) {
-    // ルートパスへのアクセスはダッシュボードへリダイレクト
-    if (pathname === '/') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    // ログインページへのアクセスはダッシュボードへリダイレクト
+    // ログインページへのアクセスはTechInsightsトップへリダイレクト
     if (pathname === '/login') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
     // その他のパスはそのまま続行
     return NextResponse.next();
@@ -45,11 +41,12 @@ export async function middleware(request: NextRequest) {
   // ルートパスへのアクセス
   if (pathname === '/') {
     if (accessToken) {
-      // トークンがある場合、バックエンドで検証してからリダイレクト
+      // トークンがある場合、バックエンドで検証してからTechInsightsトップを表示
       const isAuthenticated = await verifyToken(accessToken);
-      const url = request.nextUrl.clone();
-      url.pathname = isAuthenticated ? '/dashboard' : '/login';
-      return NextResponse.redirect(url);
+      if (isAuthenticated) {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
     } else {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -82,9 +79,9 @@ export async function middleware(request: NextRequest) {
     // トークンがある場合、バックエンドで検証
     const isAuthenticated = await verifyToken(accessToken);
     if (isAuthenticated) {
-      // 認証済みの場合はダッシュボードへリダイレクト
+      // 認証済みの場合はTechInsightsトップへリダイレクト
       const url = request.nextUrl.clone();
-      url.pathname = '/dashboard';
+      url.pathname = '/';
       return NextResponse.redirect(url);
     }
   }

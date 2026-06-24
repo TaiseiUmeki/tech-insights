@@ -7,12 +7,15 @@ services:
     env_file: ./backend/.env
     environment:
       - PYTHONUNBUFFERED=1
+      - AUTO_IMPORT_ARTICLES=true
+      - ARTICLES_CSV_PATH=/docs/articles.csv
     volumes:
       - ./backend:/app
+      - ./docs:/docs:ro
     working_dir: /app
     depends_on:
-      db:
-        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
 
   frontend:
     build:
@@ -25,6 +28,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - NEXT_PUBLIC_ENABLE_AUTH=false
       # ブラウザ（クライアント側）からのAPI URL
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       # サーバーサイド（Middleware）からのAPI URL

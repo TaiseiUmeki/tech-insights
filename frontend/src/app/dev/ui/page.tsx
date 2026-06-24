@@ -10,9 +10,7 @@ import { NavigationShowcase } from './_components/widgets/NavigationShowcase';
 const navSections = [
   {
     category: 'Dialogs',
-    items: [
-      { id: 'delete-confirm-modal', label: 'DeleteConfirmModal' },
-    ],
+    items: [{ id: 'delete-confirm-modal', label: 'DeleteConfirmModal' }],
   },
   {
     category: 'Feedback',
