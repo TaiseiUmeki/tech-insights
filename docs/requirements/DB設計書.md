@@ -19,6 +19,7 @@
 ### 1.3 インデックス方針
 
 - 記事一覧は `articles.published_at` を利用して降順ページングする。
+- キーワード検索は PostgreSQL Full Text Search を主軸とし、`pg_trgm` による類似度を補助的に利用する。
 - 記事検索は `articles.title`、`articles.content`、embedding vector index を利用する。
 - CSV 再投入時の重複防止は `articles.source_article_id` の一意制約で担保する。
 - ベクトル検索は pgvector の `vector(384)` と HNSW index を前提とする。
@@ -143,7 +144,9 @@ erDiagram
 | idx_articles_category_published_at | category_id, published_at | BTREE | カテゴリ別の記事抽出 |
 | idx_articles_author_published_at | author_id, published_at | BTREE | 著者別の記事抽出 |
 | idx_articles_title | title | BTREE | タイトル検索補助 |
-| idx_articles_full_text | title, content | GIN (expression) | タイトル・本文のキーワード検索 |
+| idx_articles_full_text | title, content | GIN (expression) | `to_tsvector('simple', title || ' ' || content)` によるキーワード検索 |
+| idx_articles_title_trgm | title | GIN (gin_trgm_ops) | タイトルの部分一致・表記ゆれ補助 |
+| idx_articles_content_trgm | content | GIN (gin_trgm_ops) | 本文の部分一致・表記ゆれ補助 |
 | idx_articles_embedding_hnsw | embedding vector_cosine_ops | HNSW | 記事単位のセマンティック検索 |
 
 ## 4. リレーション定義
@@ -158,8 +161,9 @@ erDiagram
 | # | 内容 | 依存 | 備考 |
 |---|---|---|---|
 | 1 | pgvector 拡張を有効化する | PostgreSQL 起動 | `CREATE EXTENSION IF NOT EXISTS vector;` |
-| 2 | `categories` を作成する | 1 | カテゴリマスタを保持 |
-| 3 | `authors` を作成する | 1 | 著者マスタを保持 |
-| 4 | `articles` を作成する | 2, 3 | 記事本体と記事単位 embedding を保持 |
-| 5 | 各種 index と unique 制約を作成する | 2-4 | 一覧、検索、重複防止、関連取得に利用 |
-| 6 | `docs/articles.csv` の初期投入スクリプトを実行する | 1-5 | CSV の `content` を `articles.content` に取り込み、`source_article_id` で重複投入を防止 |
+| 2 | pg_trgm 拡張を有効化する | PostgreSQL 起動 | `CREATE EXTENSION IF NOT EXISTS pg_trgm;` |
+| 3 | `categories` を作成する | 1, 2 | カテゴリマスタを保持 |
+| 4 | `authors` を作成する | 1, 2 | 著者マスタを保持 |
+| 5 | `articles` を作成する | 3, 4 | 記事本体と記事単位 embedding を保持 |
+| 6 | 各種 index と unique 制約を作成する | 3-5 | 一覧、検索、重複防止、関連取得に利用 |
+| 7 | `docs/articles.csv` の初期投入スクリプトを実行する | 1-6 | CSV の `content` を `articles.content` に取り込み、`source_article_id` で重複投入を防止 |

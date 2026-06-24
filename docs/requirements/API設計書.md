@@ -95,8 +95,18 @@
 | searchMode | string | NO | `keyword` | `keyword`, `semantic`, `hybrid` | 検索方式 | `keyword` は語句一致、`semantic` は類似度順、`hybrid` は複合順位になり、スコア表示が変わる |
 | categoryId | integer | NO | なし | `1`, `2` | カテゴリ絞り込み | 指定カテゴリの記事だけ表示される |
 | authorId | integer | NO | なし | `1`, `3` | 著者絞り込み | 指定著者の記事だけ表示される |
-| sort | string | NO | `publishedAt` | `publishedAt`, `title` | 並び替え対象 | 記事カードの並び順が指定項目基準に変わる |
+| sort | string | NO | `publishedAt` (`q` 指定時は `relevance`) | `publishedAt`, `title`, `relevance` | 並び替え対象。検索時の `relevance` は関連度順 | 記事カードの並び順が指定項目基準に変わる |
 | order | string | NO | `desc` | `desc`, `asc` | 昇順/降順 | 公開日時やタイトルの昇順/降順が切り替わる |
+
+検索アルゴリズムは以下とする。
+
+| searchMode | アルゴリズム | score の意味 |
+|---|---|---|
+| keyword | PostgreSQL Full Text Search を主軸にし、pg_trgm の類似度で補助する | キーワード関連度 |
+| semantic | `intfloat/multilingual-e5-small` で query embedding を生成し、pgvector の cosine distance で記事単位 embedding を検索する | `1 - cosine_distance` |
+| hybrid | keyword と semantic の上位候補を RRF で順位融合する | RRF による複合関連度 |
+
+`q` 未指定時は通常一覧として扱い、`publishedAt desc` で返す。`q` 指定時に `sort` が未指定の場合は `relevance` を既定値とする。検索結果の `score` は検索モード内の順位説明用であり、異なる `searchMode` 間で絶対比較しない。
 
 - **レスポンス**:
 
