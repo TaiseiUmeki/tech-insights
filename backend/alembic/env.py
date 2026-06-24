@@ -18,15 +18,20 @@ def get_database_url() -> str | None:
     """
     データベースURLを取得
     優先順位:
-    1. DATABASE_URL 環境変数（ローカル開発用）
-    2. 個別の環境変数から組み立て（ECS/Secrets Manager用）
+    1. ALEMBIC_DATABASE_URL 環境変数（明示的なmigration先）
+    2. DATABASE_URL 環境変数（ローカル開発用）
+    3. 個別の環境変数から組み立て（ECS/Secrets Manager用）
     """
-    # 1. DATABASE_URL が設定されていればそれを使用
+    alembic_database_url = os.getenv('ALEMBIC_DATABASE_URL')
+    if alembic_database_url:
+        return alembic_database_url
+
+    # 2. DATABASE_URL が設定されていればそれを使用
     database_url = os.getenv('DATABASE_URL')
     if database_url:
         return database_url
 
-    # 2. 個別の環境変数から組み立て（ECS環境用）
+    # 3. 個別の環境変数から組み立て（ECS環境用）
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT', '5432')
     db_name = os.getenv('DB_NAME')

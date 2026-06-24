@@ -9,6 +9,7 @@ services:
       - PYTHONUNBUFFERED=1
       - AUTO_IMPORT_ARTICLES=true
       - ARTICLES_CSV_PATH=/docs/articles.csv
+      - TEST_DATABASE_URL=postgresql+psycopg2://app_user:app_password@db:5432/ai_solution_test_db
     volumes:
       - ./backend:/app
       - ./docs:/docs:ro

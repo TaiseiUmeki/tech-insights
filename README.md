@@ -137,7 +137,9 @@ API 仕様:
 | `task down` | Docker Compose を停止 |
 | `task build` | Docker image を build |
 | `task logs` | コンテナログを表示 |
-| `task db-upgrade` | Alembic migration を適用 |
+| `task db-upgrade` | Alembic migration を開発DBへ適用 |
+| `task db-upgrade-test` | Alembic migration をテストDBへ適用 |
+| `task db-upgrade-all` | Alembic migration を開発DBとテストDBへ適用 |
 | `task test` | Backend の pytest を実行 |
 | `task test-all` | Backend pytest と Frontend Jest を実行 |
 | `task lint` | Backend の Ruff check を実行 |
@@ -157,6 +159,10 @@ docker compose exec -e NODE_ENV=production frontend npm run build
 
 bash frontend/scripts/check-showcase-sync.sh
 ```
+
+Backend の pytest は `ai_solution_test_db` を使用します。テストDBは pytest または
+`task db-upgrade-test` 実行時に作成され、Alembic migration で開発DBと同じ schema に揃えます。
+開発DB `ai_solution_db` に対して `Base.metadata.drop_all()` は実行しません。
 
 ## ドキュメント
 
